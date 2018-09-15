@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -27,7 +28,7 @@ public class UIManager : MonoBehaviour
     private GameObject _myImage1;
     private GameObject _myImage2;
     private Text _myText;
-
+    private GameObject _startPanel;
 
     private void Awake()
     {
@@ -58,10 +59,20 @@ public class UIManager : MonoBehaviour
         //我的项目页面
         ChildPagesDic.Add("MyProjectPage", GameObject.Find("MyProjectPage"));  //具体的项目页面
 
-        ControlParentPages("HomePage");  //初始时显示首页
-        HideAllChildPages();  //初始时隐藏所有子页面
+        _startPanel = GameObject.Find("StartPanel");
+        _startPanel.SetActive(true);
         
         InitBtn();
+
+        StartCoroutine(Init());
+    }
+
+    IEnumerator Init()
+    {
+        yield return new WaitForSeconds(1);
+        ControlParentPages("HomePage");  //初始时显示首页
+        HideAllChildPages();  //初始时隐藏所有子页面
+        _startPanel.SetActive(false);
     }
     
     private void InitBtn()
