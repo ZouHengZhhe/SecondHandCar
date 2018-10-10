@@ -50,17 +50,15 @@ public class InfinityGridLayoutGroup : MonoBehaviour
     // Use this for initialization
     private void Start()
     {
+        //StartCoroutine(InitChildren());
     }
 
     private IEnumerator InitChildren()
     {
-        print("初始化");
-        //yield return null;
+        yield return 0;
 
-        print("初始化1");
         if (!hasInit)
         {
-            print("初始化2");
             //获取Grid的宽度;
             rectTransform = GetComponent<RectTransform>();
 
@@ -165,9 +163,8 @@ public class InfinityGridLayoutGroup : MonoBehaviour
                 rectTransform.sizeDelta -= new Vector2((gridLayoutGroup.cellSize.x + gridLayoutGroup.spacing.x) * column, 0);
             }
         }
-        yield return null;
     }
-    
+
     private void ScrollCallback(Vector2 data)
     {
         UpdateChildren();
@@ -185,6 +182,7 @@ public class InfinityGridLayoutGroup : MonoBehaviour
         //竖直滑动
         if (gridLayoutGroup.constraint == GridLayoutGroup.Constraint.FixedColumnCount)
         {
+            print("竖直滑动！");
             float offsetY = currentPos.y - startPosition.y;
 
             if (offsetY > 0)
@@ -204,7 +202,7 @@ public class InfinityGridLayoutGroup : MonoBehaviour
 
                     if (childBottom >= scrollRectUp)
                     {
-                        //Debug.Log("childBottom >= scrollRectUp");
+                        Debug.Log("childBottom >= scrollRectUp");
 
                         //移动到底部;
                         for (int index = 0; index < gridLayoutGroup.constraintCount; index++)
@@ -306,7 +304,7 @@ public class InfinityGridLayoutGroup : MonoBehaviour
 
                     if (childRight <= scrollRectLeft)
                     {
-                        Debug.Log("childRight :"+childRight);
+                        Debug.Log("childRight :" + childRight);
                         Debug.Log("scrollRectLeft :" + scrollRectLeft);
 
                         //移动到右边;

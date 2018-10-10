@@ -90,9 +90,10 @@
     <Compile Include="Assets\Scripts\REST\RestData.cs" />
     <Compile Include="Assets\Scripts\REST\Restful.cs" />
     <Compile Include="Assets\Scripts\Test\Test1.cs" />
+    <Compile Include="Assets\Scripts\Test\TestPrintScrollRectPara.cs" />
+    <Compile Include="Assets\Scripts\UI\UICrowdfunding.cs" />
     <Compile Include="Assets\Scripts\UI\UIHome.cs" />
     <Compile Include="Assets\Scripts\UI\UIManager.cs" />
-    <Compile Include="Assets\Scripts\UI\UIMyCrowdfunding.cs" />
     <Compile Include="Assets\Scripts\UI\UIMyPage.cs" />
     <Compile Include="Assets\Scripts\UI\UIMyProject.cs" />
     <Compile Include="Assets\Scripts\UI\UIProjects.cs" />

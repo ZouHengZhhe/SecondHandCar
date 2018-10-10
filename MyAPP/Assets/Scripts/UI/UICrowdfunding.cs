@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 
-public class UIMyCrowdfunding : MonoBehaviour
+public class UICrowdfunding : MonoBehaviour
 {
     private Button _inBtn;      //在投中按钮
     private Button _endBtn;   //已结束按钮
@@ -10,11 +10,12 @@ public class UIMyCrowdfunding : MonoBehaviour
     private Text _inBtnTxt;
     private Text _endBtnTxt;
 
-    // Use this for initialization
-    private void Start()
-    {
-        UiInit();
-    }
+    private ScrollRect _sr;
+
+    private Transform _itemsParent;
+
+
+    private void Start() { UiInit(); }
 
     //得到UI
     private void UiInit()
@@ -32,20 +33,36 @@ public class UIMyCrowdfunding : MonoBehaviour
 
         //初始状态为在投中
         SetStatu(true);
+
+        _sr = this.transform.Find("Panel_Scroll").GetComponent<ScrollRect>();
+    }
+    
+
+    private void OnEnable()
+    {
+        LoadMyCrowdfunding();
+    }
+
+    private void LoadMyCrowdfunding()
+    {
+        if (_sr!=null)
+        {
+            _sr.verticalNormalizedPosition = 1;
+        }
+       
     }
 
     private void SetStatu(bool isIn)
     {
-        if (isIn)
+        if (isIn)  //在投中
         {
             _inBtnImage.color = new Color(0.1f, 0.5f, 0.7f, 1);
             _endBtnImage.color = new Color(1, 1, 1, 1);
             _inBtnTxt.color = new Color(1, 1, 1, 1);
             _endBtnTxt.color = new Color(0, 0, 0, 1);
         }
-        else
+        else  //已结束
         {
-            print("点击了已结束按钮");
             _inBtnImage.color = new Color(1, 1, 1, 1);
             _endBtnImage.color = new Color(0.1f, 0.5f, 0.7f, 1);
             _inBtnTxt.color = new Color(0, 0, 0, 1);
@@ -55,11 +72,13 @@ public class UIMyCrowdfunding : MonoBehaviour
 
     #region 按钮点击事件
 
+    //在投中
     private void OnClickInBtn()
     {
         SetStatu(true);
     }
 
+    //已结束
     private void OnClickEndBtn()
     {
         SetStatu(false);
