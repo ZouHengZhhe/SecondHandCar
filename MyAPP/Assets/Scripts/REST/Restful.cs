@@ -7,6 +7,27 @@ using UnityEngine.Networking;
 
 public class Restful : MonoBehaviour
 {
+    private static Restful _instance;
+    public static Restful Instance
+    {
+        get
+        {
+            if (_instance == null)
+            {
+                _instance = new Restful();
+            }
+            return _instance;
+        }
+        private set { _instance = value; }
+    }
+
+    private int _registerCode=-1;
+
+    private void Awake()
+    {
+        _instance = this;
+    }
+
     //private string _getUrl= "http://jrdcar.com/front/totalAssets";
     private string _totalAssetsUrl = "http://jrdcar.com/front/totalAssets";
 
@@ -27,6 +48,13 @@ public class Restful : MonoBehaviour
         url = "http://jrdcar.com/front/statistics";
         url = "http://jrdcar.com/front/projectDetail?id=82";
         StartCoroutine(IEGet(url));
+    }
+
+    //外部调用Rest接口
+    public int OnRest(string str)
+    {
+        StartCoroutine(IEPost1("15618028732", "zhhe9008321334"));
+        return _registerCode;
     }
 
     //累计注册会员数
@@ -89,8 +117,10 @@ public class Restful : MonoBehaviour
             }
             else
             {
-                //Debug.Log("Form upload complete!");
                 print(www.downloadHandler.text);
+                //解析结果
+                RestRegisterData data=JsonMapper.ToObject<RestRegisterData>(www.downloadHandler.text);
+                _registerCode = data.code;
             }
         }
     }

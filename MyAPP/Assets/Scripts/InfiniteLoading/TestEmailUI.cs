@@ -37,44 +37,25 @@ namespace ThisisGame
             Transform MyPackagePanel = this.transform.Find("MyPacketPage");
             _myPackageLayoutGroup = MyPackagePanel.Find("Panel_Scroll/Panel_Grid").GetComponent<InfinityGridLayoutGroup>();
             _myPackageLayoutGroup.SetAmount(_myPackageAmount);
-            //_myPackageLayoutGroup.updateChildrenCallback = UpdateMyPackageCallback;
         }
         
         //我的项目
         void UpdateChildrenCallback(int index, Transform trans)
         {
-            //Debug.Log("UpdateChildrenCallback: index=" + index + " name:" + trans.name);
-
             //页面换位置后，更新页面
             Text text = trans.Find("Text").GetComponent<Text>();
             //text.text = index.ToString();
             text.text ="测试"+ index.ToString();
-            //print("Callback");
         }
 
         //我的众筹
         void UpdateMyCrowdCallback(int index, Transform trans)
         {
-            //Debug.Log("UpdateChildrenCallback: index=" + index + " name:" + trans.name);
-
             //页面换位置后，更新页面
             Text text = trans.Find("Text").GetComponent<Text>();
             //text.text = index.ToString();
             text.text = "测试" + (index+1).ToString();
-            print("Callback");
         }
-
-        ////我的红包
-        //void UpdateMyPackageCallback(int index,Transform trans)
-        //{
-        //    ////Debug.Log("UpdateChildrenCallback: index=" + index + " name:" + trans.name);
-
-        //    ////页面换位置后，更新页面
-        //    //Text text = trans.Find("Text").GetComponent<Text>();
-        //    ////text.text = index.ToString();
-        //    //text.text = "测试" + index.ToString();
-        //    print("Callback");
-        //}
     }
 
 }

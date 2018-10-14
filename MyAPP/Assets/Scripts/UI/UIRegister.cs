@@ -37,9 +37,20 @@ public class UIRegister : MonoBehaviour
         _failBtn.onClick.AddListener(OnClickFailBtn);
     }
 
+    //登陆按钮点击事件，判断是否登陆成功
     public void OnClickRegisterBtn()
     {
-        Player.Instance.IsRegister = true;
+        int data=Restful.Instance.OnRest(RestInterfaceName.RegisterRest);  //登陆验证
+        //Player.Instance.IsRegister = true;
+        if (data == 0)  //账号存在，登陆成功
+        {
+            Player.Instance.IsRegister = true;
+        }
+        else  //账号不存在登陆失败
+        {
+            Player.Instance.IsRegister = false;
+        }
+
         if (Player.Instance.IsRegister)
         {
             SuccessImg.SetActive(true);

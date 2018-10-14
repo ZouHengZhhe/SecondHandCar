@@ -182,7 +182,7 @@ public class InfinityGridLayoutGroup : MonoBehaviour
         //竖直滑动
         if (gridLayoutGroup.constraint == GridLayoutGroup.Constraint.FixedColumnCount)
         {
-            print("竖直滑动！");
+            //print("竖直滑动！");
             float offsetY = currentPos.y - startPosition.y;
 
             if (offsetY > 0)
@@ -202,7 +202,7 @@ public class InfinityGridLayoutGroup : MonoBehaviour
 
                     if (childBottom >= scrollRectUp)
                     {
-                        Debug.Log("childBottom >= scrollRectUp");
+                        //Debug.Log("childBottom >= scrollRectUp");
 
                         //移动到底部;
                         for (int index = 0; index < gridLayoutGroup.constraintCount; index++)

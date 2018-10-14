@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.UI;
 
 public class UICrowdfunding : MonoBehaviour
@@ -9,10 +11,10 @@ public class UICrowdfunding : MonoBehaviour
     private Image _endBtnImage;
     private Text _inBtnTxt;
     private Text _endBtnTxt;
-
-    private ScrollRect _sr;
-
+    
     private Transform _itemsParent;
+
+    private List<Button> _btnList = new List<Button>();
 
 
     private void Start() { UiInit(); }
@@ -31,10 +33,22 @@ public class UICrowdfunding : MonoBehaviour
         _inBtn.onClick.AddListener(OnClickInBtn);
         _endBtn.onClick.AddListener(OnClickEndBtn);
 
+        //得到所有Item,并为按钮注册点击事件
+        _itemsParent = this.transform.Find("Panel_Scroll/Panel_Grid");
+        for(int i = 0; i < _itemsParent.childCount; i++)
+        {
+            _btnList.Add(_itemsParent.GetChild(i).GetComponent<Button>());
+            _btnList[i].onClick.AddListener(
+                delegate ()
+                {
+                    OnClickItem(i);
+                }
+                );
+        }
+
         //初始状态为在投中
         SetStatu(true);
-
-        _sr = this.transform.Find("Panel_Scroll").GetComponent<ScrollRect>();
+        
     }
     
 
@@ -45,10 +59,11 @@ public class UICrowdfunding : MonoBehaviour
 
     private void LoadMyCrowdfunding()
     {
-        if (_sr!=null)
-        {
-            _sr.verticalNormalizedPosition = 1;
-        }
+        //if (_sr!=null)
+        //{
+        //    //StartCoroutine("ResetScroll");
+        //    _sr.verticalNormalizedPosition = 1;
+        //}
        
     }
 
@@ -69,6 +84,7 @@ public class UICrowdfunding : MonoBehaviour
             _endBtnTxt.color = new Color(1, 1, 1, 1);
         }
     }
+    
 
     #region 按钮点击事件
 
@@ -82,6 +98,12 @@ public class UICrowdfunding : MonoBehaviour
     private void OnClickEndBtn()
     {
         SetStatu(false);
+    }
+
+    //Item按钮点击事件
+    private void OnClickItem(int index)
+    {
+        UIManager.Instance.ControlChildPages("MyProjectPage");
     }
 
     #endregion 按钮点击事件
