@@ -12,6 +12,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+public delegate void UpdateChildrenCallbackDelegate(int index, Transform trans);
+
 [RequireComponent(typeof(GridLayoutGroup))]
 [RequireComponent(typeof(ContentSizeFitter))]
 public class InfinityGridLayoutGroup : MonoBehaviour
@@ -32,9 +34,9 @@ public class InfinityGridLayoutGroup : MonoBehaviour
 
     private int amount = 0;
 
-    public delegate void UpdateChildrenCallbackDelegate(int index, Transform trans);
-
+    //public delegate void UpdateChildrenCallbackDelegate(int index, Transform trans);
     public UpdateChildrenCallbackDelegate updateChildrenCallback = null;
+    
 
     private int realIndex = -1;
     private int realIndexUp = -1; //从下往上;
@@ -132,10 +134,6 @@ public class InfinityGridLayoutGroup : MonoBehaviour
         startPosition = rectTransform.anchoredPosition;
 
         realIndex = children.Count - 1;
-
-        //Debug.Log( scrollRect.transform.TransformPoint(Vector3.zero));
-
-        // Debug.Log(transform.TransformPoint(children[0].localPosition));
 
         hasInit = true;
 

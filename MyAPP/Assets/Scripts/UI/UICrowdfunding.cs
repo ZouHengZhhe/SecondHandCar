@@ -12,9 +12,12 @@ public class UICrowdfunding : MonoBehaviour
     private Text _inBtnTxt;
     private Text _endBtnTxt;
     
+    
     private Transform _itemsParent;
 
     private List<Button> _btnList = new List<Button>();
+
+    private TestEmailUI _testEmailUI;
 
 
     private void Start() { UiInit(); }
@@ -46,26 +49,15 @@ public class UICrowdfunding : MonoBehaviour
                 );
         }
 
+        _testEmailUI = this.transform.parent.GetComponent<TestEmailUI>();
+
         //初始状态为在投中
         SetStatu(true);
-        
-    }
-    
 
-    private void OnEnable()
-    {
-        LoadMyCrowdfunding();
     }
+   
 
-    private void LoadMyCrowdfunding()
-    {
-        //if (_sr!=null)
-        //{
-        //    //StartCoroutine("ResetScroll");
-        //    _sr.verticalNormalizedPosition = 1;
-        //}
-       
-    }
+   
 
     private void SetStatu(bool isIn)
     {
@@ -75,6 +67,17 @@ public class UICrowdfunding : MonoBehaviour
             _endBtnImage.color = new Color(1, 1, 1, 1);
             _inBtnTxt.color = new Color(1, 1, 1, 1);
             _endBtnTxt.color = new Color(0, 0, 0, 1);
+
+            //加载在投中项目个数
+            if (RestController.Instance.MyProjectsInList.Count==0)
+            {
+                _testEmailUI.InitMyProjectsIn(0);
+            }
+            else
+            {
+                _testEmailUI.InitMyProjectsIn(RestController.Instance.MyProjectsInList.Count);
+            }
+
         }
         else  //已结束
         {
@@ -82,6 +85,16 @@ public class UICrowdfunding : MonoBehaviour
             _endBtnImage.color = new Color(0.1f, 0.5f, 0.7f, 1);
             _inBtnTxt.color = new Color(0, 0, 0, 1);
             _endBtnTxt.color = new Color(1, 1, 1, 1);
+
+            //加载已结束项目个数
+            if (RestController.Instance.MyProjectsEndList.Count==0)
+            {
+                _testEmailUI.InitMyProjectsEnd(0);
+            }
+            else
+            {
+                _testEmailUI.InitMyProjectsEnd(RestController.Instance.MyProjectsEndList.Count);
+            }
         }
     }
     

@@ -12,6 +12,13 @@ public class UIHome : MonoBehaviour
     private Button _item3;
     private Button _item4;
 
+    //四个轮播图
+    private Image[] _itemImgArray=new Image[4];
+
+    private Text _memCountTxt;
+    private Text _projectsCountTxt;
+    private Text _totalAssetsTxt;
+
     private void Start()
     {
         InitUI();
@@ -37,6 +44,57 @@ public class UIHome : MonoBehaviour
         _item2.onClick.AddListener(OnClickItem2Btn);
         _item3.onClick.AddListener(OnClickItem3Btn);
         _item4.onClick.AddListener(OnClickItem4Btn);
+
+        //得到显示 会员数量，众筹项目，资产总额的Text
+        _memCountTxt = this.transform.Find("MemCount").Find("ValueTxt").GetComponent<Text>();
+        _projectsCountTxt = this.transform.Find("ProjectsCount").Find("ValueTxt").GetComponent<Text>();
+        _totalAssetsTxt = this.transform.Find("TotalAssets").Find("ValueTxt").GetComponent<Text>();
+
+        //得到四个轮播图
+        for(int i=0;i<4;i++)
+        {
+            _itemImgArray[i]= this.transform.Find("Panel").Find("ScrollView").Find("Content").Find("Image"+i).GetComponent<Image>();
+        }
+    }
+
+    public void ControlThreeTextInfo(int memCount,int projectsCount,double totalAssets)
+    {
+        _memCountTxt.text = memCount.ToString();
+        _projectsCountTxt.text = projectsCount.ToString();
+        _totalAssetsTxt.text = totalAssets.ToString();
+    }
+
+    //加载4个轮播图
+    public void LoadScrollItems(Sprite[] spritesArray,int[] statesArray)
+    {
+        for(int i=0;i<4;i++)
+        {
+            _itemImgArray[i].sprite = spritesArray[i];
+            switch(statesArray[i])
+            {
+                case -1:
+                    _itemImgArray[i].transform.Find("StateImg").Find("StateTxt").GetComponent<Text>().text = "取消";
+                    break;
+                case 1:
+                    _itemImgArray[i].transform.Find("StateImg").Find("StateTxt").GetComponent<Text>().text = "预热";
+                    break;
+                case 2:
+                    _itemImgArray[i].transform.Find("StateImg").Find("StateTxt").GetComponent<Text>().text = "众筹";
+                    break;
+                case 3:
+                    _itemImgArray[i].transform.Find("StateImg").Find("StateTxt").GetComponent<Text>().text = "筹满";
+                    break;
+                case 4:
+                    _itemImgArray[i].transform.Find("StateImg").Find("StateTxt").GetComponent<Text>().text = "投票";
+                    break;
+                case 5:
+                    _itemImgArray[i].transform.Find("StateImg").Find("StateTxt").GetComponent<Text>().text = "出售";
+                    break;
+                case 6:
+                    _itemImgArray[i].transform.Find("StateImg").Find("StateTxt").GetComponent<Text>().text = "分红";
+                    break;
+            }
+        }
     }
 
     #region 按钮点击事件

@@ -4,14 +4,14 @@ using UnityEngine.UI;
 
 public class UIProjects : MonoBehaviour
 {
-    private Button _item1Btn;  //第一个项目的按钮
-    private Button _item2Btn;  //第二个项目的按钮
-    private Button _item3Btn;  //第三个项目的按钮
-
     private List<Button> _btnList = new List<Button>();  //项目按钮集合
 
+    private Transform[] _projectsArray = new Transform[5];
+    private Image[] _imageArray = new Image[5];  //项目显示的图片
+    private Text[] _stateTxt = new Text[5];  //项目状态显示的文字
 
-    private GameObject[] _projectsArray = new GameObject[3];
+    public delegate void UpdateProjectPageDel(int index);
+    public UpdateProjectPageDel UpdateProjectPageCallback = null;
 
     void Start()
     {
@@ -21,58 +21,81 @@ public class UIProjects : MonoBehaviour
             _btnList.Add(this.transform.GetChild(i).GetComponent<Button>());
         }
 
-        for(int i = 0; i < _btnList.Count; i++)
+        //按钮监听事件绑定
+        for (int i = 0; i < _btnList.Count; i++)
         {
-            _btnList[i].onClick.AddListener(
+            Button btn = _btnList[i];
+            btn.onClick.AddListener(
                 delegate ()
                 {
-                    OnClick(i);
+                    OnClick(btn.gameObject);
                 }
                 );
         }
-        
+
         //项目初始化
-        for (int i = 0; i < 3; i++)
+        for (int i = 0; i < 5; i++)
         {
-            _projectsArray[i] = this.transform.Find("Item" + (i + 1).ToString()).gameObject;
+            _projectsArray[i] = this.transform.Find("Item" + (i + 1).ToString());
+            _imageArray[i] = _projectsArray[i].Find("Img").GetComponent<Image>();
+            _stateTxt[i] = _imageArray[i].transform.GetChild(0).GetChild(0).GetComponent<Text>();
         }
-        ShowProject(3);
 
     }
 
 
     #region 按钮点击事件
 
-    public void OnClick(int i)
+    public void OnClick(GameObject obj)
     {
         //显示选中的项目
         UIManager.Instance.ControlChildPages("MyProjectPage");
+
+        //加载项目界面
+        UpdateProjectPageCallback(obj.GetComponent<SignIndex>().Index);
+
     }
 
     #endregion
 
-
-
-
-    //显示几个项目
-    private void ShowProject(int num)
+    //各个项目显示的图片（在TestEmailUI中被调用）
+    public void OnChangeProjectImage(int index,Transform trans,List<Project> projectList)
     {
-        for (int i = 0; i < _projectsArray.Length; i++)
-        {
-            if (i < num)
-            {
-                _projectsArray[i].SetActive(true);
-            }
-            else
-            {
-                _projectsArray[i].SetActive(false);
-            }
-        }
+        //print("index=" + index + "   trans=" + trans.name);
+        trans.Find("Img").GetComponent<Image>().sprite= projectList[index].SpriteTex;   //图片赋值
+        Text changeTxt = trans.Find("Img").GetChild(0).GetChild(0).GetComponent<Text>();
+        LoadState(changeTxt, projectList[index].State);    //状态赋值
+        
     }
 
-    //各个项目显示的图片
-    private void ProjectImage()
+    private void LoadState(Text txt, int stateCode)
     {
-
+        switch (stateCode)
+        {
+            case -1:
+                txt.text = "取消";
+                break;
+            case 1:
+                txt.text = "预热";
+                break;
+            case 2:
+                txt.text = "众筹";
+                break;
+            case 3:
+                txt.text = "筹满";
+                break;
+            case 4:
+                txt.text = "投票";
+                break;
+            case 5:
+                txt.text = "出售";
+                break;
+            case 6:
+                txt.text = "分红";
+                break;
+            default:
+                txt.text = "众筹";
+                break;
+        }
     }
 }

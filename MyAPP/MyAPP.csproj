@@ -84,18 +84,34 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Scripts\Data\TotalAssets.cs" />
+    <Compile Include="Assets\Scripts\Data\Project.cs" />
+    <Compile Include="Assets\Scripts\Data\RestDataBalance.cs" />
+    <Compile Include="Assets\Scripts\Data\RestDataJoinProject.cs" />
+    <Compile Include="Assets\Scripts\Data\RestDataMemCount.cs" />
+    <Compile Include="Assets\Scripts\Data\RestDataProject.cs" />
+    <Compile Include="Assets\Scripts\Data\RestDataProjectDetail.cs" />
+    <Compile Include="Assets\Scripts\Data\RestDataProjectInfo.cs" />
+    <Compile Include="Assets\Scripts\Data\RestDataProjectList.cs" />
+    <Compile Include="Assets\Scripts\Data\RestDataProjectState.cs" />
+    <Compile Include="Assets\Scripts\Data\RestDataRedPacketDetail.cs" />
+    <Compile Include="Assets\Scripts\Data\RestDataRedPacketInfo.cs" />
+    <Compile Include="Assets\Scripts\Data\RestDataRegister.cs" />
+    <Compile Include="Assets\Scripts\Data\RestDataStatistics.cs" />
+    <Compile Include="Assets\Scripts\Data\RestDataStatisticsData.cs" />
+    <Compile Include="Assets\Scripts\Data\RestDataTotalAssets.cs" />
     <Compile Include="Assets\Scripts\InfiniteLoading\InfinityGridLayoutGroup.cs" />
     <Compile Include="Assets\Scripts\InfiniteLoading\TestEmailUI.cs" />
-    <Compile Include="Assets\Scripts\MyRedPacket.cs" />
     <Compile Include="Assets\Scripts\Player.cs" />
     <Compile Include="Assets\Scripts\REST\HttpAPI.cs" />
+    <Compile Include="Assets\Scripts\REST\RestController.cs" />
     <Compile Include="Assets\Scripts\REST\RestData.cs" />
-    <Compile Include="Assets\Scripts\REST\Restful.cs" />
     <Compile Include="Assets\Scripts\REST\RestInterfaceName.cs" />
-    <Compile Include="Assets\Scripts\REST\RestRegisterData.cs" />
+    <Compile Include="Assets\Scripts\REST\Restful.cs" />
+    <Compile Include="Assets\Scripts\SignIndex.cs" />
     <Compile Include="Assets\Scripts\Test\Test1.cs" />
+    <Compile Include="Assets\Scripts\Test\TestGetTexture.cs" />
     <Compile Include="Assets\Scripts\Test\TestPrintScrollRectPara.cs" />
+    <Compile Include="Assets\Scripts\UI\UIController.cs" />
     <Compile Include="Assets\Scripts\UI\UICrowdfunding.cs" />
     <Compile Include="Assets\Scripts\UI\UIHome.cs" />
     <Compile Include="Assets\Scripts\UI\UIManager.cs" />
@@ -103,6 +119,7 @@
     <Compile Include="Assets\Scripts\UI\UIMyProject.cs" />
     <Compile Include="Assets\Scripts\UI\UIProjects.cs" />
     <Compile Include="Assets\Scripts\UI\UIRegister.cs" />
+    <Compile Include="Assets\Scripts\UI\UIStartPanel.cs" />
     <Compile Include="Assets\Scripts\UIScroll\ScrollPage.cs" />
     <Compile Include="Assets\Scripts\UIScroll\ScrollPageMark.cs" />
   </ItemGroup>

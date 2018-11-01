@@ -30,6 +30,11 @@ public class UIManager : MonoBehaviour
     private Text _myText;
     private GameObject _startPanel;
 
+    public delegate void UpdateDel();
+    public UpdateDel UpdateHomePageCallback = null;
+    public UpdateDel UpdateProjectsPageCallback = null;  //在RestController中监听该委托
+    public UpdateDel UpdateMyPageCallback = null;
+
     private void Awake()
     {
         Instance = this;
@@ -64,12 +69,19 @@ public class UIManager : MonoBehaviour
         
         InitBtn();
 
-        StartCoroutine(Init());
+        //StartCoroutine(Init());
     }
 
     IEnumerator Init()
     {
         yield return new WaitForSeconds(1);
+        ControlParentPages("HomePage");  //初始时显示首页
+        HideAllChildPages();  //初始时隐藏所有子页面
+        _startPanel.SetActive(false);
+    }
+    //加载完成，显示APP界面
+    public void ShowApp()
+    {
         ControlParentPages("HomePage");  //初始时显示首页
         HideAllChildPages();  //初始时隐藏所有子页面
         _startPanel.SetActive(false);
@@ -108,6 +120,9 @@ public class UIManager : MonoBehaviour
         HideAllChildPages();  //隐藏所有子页面
         ControlParentPages("HomePage");
         ControlThreeBtnColor("HomeBtn");
+
+        //更新会员数量，资产总额，项目总数
+        UpdateHomePageCallback();
     }
 
     //“众筹项目”按钮点击事件
@@ -116,6 +131,9 @@ public class UIManager : MonoBehaviour
         HideAllChildPages();  //隐藏所有子页面
         ControlParentPages("ProjectsPage");
         ControlThreeBtnColor("ProjectsBtn");
+
+        //更新众筹项目
+        UpdateProjectsPageCallback();
     }
 
     //“我的”按钮点击事件
@@ -124,6 +142,8 @@ public class UIManager : MonoBehaviour
         HideAllChildPages();  //隐藏所有子页面
         ControlParentPages("MyPage");
         ControlThreeBtnColor("MyBtn");
+
+        UpdateMyPageCallback();
     }
     
     #endregion 按钮点击事件

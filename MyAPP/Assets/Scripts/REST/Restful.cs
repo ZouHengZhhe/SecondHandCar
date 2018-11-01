@@ -1,6 +1,8 @@
 ﻿using LitJson;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
+using System.Net;
 using System.Text;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -21,8 +23,6 @@ public class Restful : MonoBehaviour
         private set { _instance = value; }
     }
 
-    private int _registerCode=-1;
-
     private void Awake()
     {
         _instance = this;
@@ -34,27 +34,12 @@ public class Restful : MonoBehaviour
     // Use this for initialization
     private void Start()
     {
-        StartCoroutine(IEPost1("15618028732", "zhhe9008321334"));
-
-        //StartCoroutine(IEGet1());
-
-        string url = "http://jrdcar.com/front/totalAssets";
-        url = "http://jrdcar.com/front/countMem";
-        url = "http://jrdcar.com/front/memWallet?memID=4";
-        url = "http://jrdcar.com/front/memCoupons?memID=4";
-        url = "http://jrdcar.com/front/countMem";
-        url = "http://jrdcar.com/front/projectList";
-        url = "http://jrdcar.com/front/joinProject?memID=7";
-        url = "http://jrdcar.com/front/statistics";
-        url = "http://jrdcar.com/front/projectDetail?id=82";
-        StartCoroutine(IEGet(url));
-    }
-
-    //外部调用Rest接口
-    public int OnRest(string str)
-    {
-        StartCoroutine(IEPost1("15618028732", "zhhe9008321334"));
-        return _registerCode;
+        //GetMemCount("http://jrdcar.com/front/countMem");
+        //GetTotalAssets("http://jrdcar.com/front/totalAssets");
+        //GetAllProjects("http://jrdcar.com/front/projectList");
+        //GetProjects(7);
+        //GetStatistics();
+        GetProjectsList();
     }
 
     //累计注册会员数
@@ -119,21 +104,21 @@ public class Restful : MonoBehaviour
             {
                 print(www.downloadHandler.text);
                 //解析结果
-                RestRegisterData data=JsonMapper.ToObject<RestRegisterData>(www.downloadHandler.text);
-                _registerCode = data.code;
+                RestDataRegister data = JsonMapper.ToObject<RestDataRegister>(www.downloadHandler.text);
+                //RegisterCallback(data.code, phoneNum, password, data.id);
             }
         }
     }
 
     //2、Get，用户可用余额(不支持带参数的GET)
-    private IEnumerator IEGet1()
+    private IEnumerator IEGetBalance()
     {
         string url = "http://jrdcar.com/front/memWallet";
 
         Dictionary<string, int> dic = new Dictionary<string, int>();
-        dic.Add("memID", 4);
+        dic.Add("memID", 7);
         string json = JsonMapper.ToJson(dic);
-
+        print("dkfs");
         using (UnityWebRequest www = UnityWebRequest.Get(url))
         {
             www.SetRequestHeader("Content-Type", "application/json");
@@ -141,7 +126,6 @@ public class Restful : MonoBehaviour
             UploadHandlerRaw upHandler = new UploadHandlerRaw(data);
             upHandler.contentType = "application/json";
             www.uploadHandler = upHandler;
-
             yield return www.Send();
 
             if (www.isError)
@@ -172,5 +156,348 @@ public class Restful : MonoBehaviour
                 print(request.downloadHandler.text);
             }
         }
+    }
+
+    //-----------------------------------------------------------------------------------------------
+    //不带参数的get请求，同步
+    private string NoParameterGet(string url)
+    {
+        string result = "";
+        HttpWebRequest req = (HttpWebRequest)WebRequest.Create(url);
+        HttpWebResponse resp = (HttpWebResponse)req.GetResponse();
+        Stream stream = resp.GetResponseStream();
+        try
+        {
+            //获取内容
+            using (StreamReader reader = new StreamReader(stream))
+            {
+                result = reader.ReadToEnd();
+            }
+        }
+        finally
+        {
+            stream.Close();
+        }
+        return result;
+    }
+
+    //带参数的Get请求，同步
+    private string HaveParameterGet(string url, Dictionary<string, int> dic)
+    {
+        string result = "";
+        StringBuilder builder = new StringBuilder();
+        builder.Append(url);
+        if (dic.Count > 0)
+        {
+            builder.Append("?");
+            int i = 0;
+            foreach (var item in dic)
+            {
+                if (i > 0)
+                    builder.Append("&");
+                builder.AppendFormat("{0}={1}", item.Key, item.Value);
+                i++;
+            }
+        }
+        HttpWebRequest req = (HttpWebRequest)WebRequest.Create(builder.ToString());
+        //添加参数
+        HttpWebResponse resp = (HttpWebResponse)req.GetResponse();
+        Stream stream = resp.GetResponseStream();
+        try
+        {
+            //获取内容
+            using (StreamReader reader = new StreamReader(stream))
+            {
+                result = reader.ReadToEnd();
+            }
+        }
+        finally
+        {
+            stream.Close();
+        }
+        return result;
+    }
+
+    //不带参数的Post请求
+    private string Post(string url)
+    {
+        string result = "";
+        HttpWebRequest req = (HttpWebRequest)WebRequest.Create(url);
+        req.Method = "POST";
+        HttpWebResponse resp = (HttpWebResponse)req.GetResponse();
+        Stream stream = resp.GetResponseStream();
+        //获取内容
+        using (StreamReader reader = new StreamReader(stream, Encoding.UTF8))
+        {
+            result = reader.ReadToEnd();
+        }
+        return result;
+    }
+
+    //带参数的Post请求，指定键值对
+    private string Post(string url, Dictionary<string, string> dic)
+    {
+        string result = "";
+        HttpWebRequest req = (HttpWebRequest)WebRequest.Create(url);
+        req.Method = "POST";
+        req.ContentType = "application/x-www-form-urlencoded";
+        #region 添加Post 参数
+        StringBuilder builder = new StringBuilder();
+        int i = 0;
+        foreach (var item in dic)
+        {
+            if (i > 0)
+                builder.Append("&");
+            builder.AppendFormat("{0}={1}", item.Key, item.Value);
+            i++;
+        }
+        byte[] data = Encoding.UTF8.GetBytes(builder.ToString());
+        req.ContentLength = data.Length;
+        using (Stream reqStream = req.GetRequestStream())
+        {
+            reqStream.Write(data, 0, data.Length);
+            reqStream.Close();
+        }
+        #endregion
+        HttpWebResponse resp = (HttpWebResponse)req.GetResponse();
+        Stream stream = resp.GetResponseStream();
+        //获取响应内容
+        using (StreamReader reader = new StreamReader(stream, Encoding.UTF8))
+        {
+            result = reader.ReadToEnd();
+        }
+        return result;
+    }
+
+    //带参数的Post请求，指定发送字符串内容
+    private string Post(string url, string content)
+    {
+        string result = "";
+        HttpWebRequest req = (HttpWebRequest)WebRequest.Create(url);
+        req.Method = "POST";
+        req.ContentType = "application/x-www-form-urlencoded";
+
+        #region 添加Post 参数
+        byte[] data = Encoding.UTF8.GetBytes(content);
+        req.ContentLength = data.Length;
+        using (Stream reqStream = req.GetRequestStream())
+        {
+            reqStream.Write(data, 0, data.Length);
+            reqStream.Close();
+        }
+        #endregion
+
+        HttpWebResponse resp = (HttpWebResponse)req.GetResponse();
+        Stream stream = resp.GetResponseStream();
+        //获取响应内容
+        using (StreamReader reader = new StreamReader(stream, Encoding.UTF8))
+        {
+            result = reader.ReadToEnd();
+        }
+        return result;
+    }
+
+    //====================================================
+
+    //网站统计，得到项目总数，注册总数，累计众筹金额
+    public RestDataStatistics GetStatistics()
+    {
+        string url = "http://jrdcar.com/front/statistics";
+        string str = NoParameterGet(url);
+        RestDataStatistics statistics = JsonMapper.ToObject<RestDataStatistics>(str);
+        //print("projectCount = " + statistics.data.projectCount);
+        //print("memberCount = " + statistics.data.memberCount);
+        //print("raiseCount = " + statistics.data.raiseCount);
+        return statistics;
+    }
+
+    //得到项目列表
+    public RestDataProjectList GetProjectsList()
+    {
+        string url = "http://jrdcar.com/front/projectList";
+        Dictionary<string, int> dic = new Dictionary<string, int>();
+        string str = "";
+        int total = JsonMapper.ToObject<RestDataProjectList>(HaveParameterGet(url, dic)).total;
+        int count = total / 10 + 1;
+        RestDataProjectList result = new RestDataProjectList();
+        for (int i = 0; i < count; i++)
+        {
+            if(dic.ContainsKey("offset")&&dic.ContainsKey("limit"))
+            {
+                dic["offset"] = 0 + i * 10;
+                dic["limit"] = 10;
+            }
+            else
+            {
+                dic.Add("offset", 0 + i * 10);
+                dic.Add("limit", 10);
+            }
+            
+            str = HaveParameterGet(url, dic);
+            //数组叠加
+            RestDataProjectList data = JsonMapper.ToObject<RestDataProjectList>(str);
+            if (data.rows.Length==0)
+            {
+                break;
+            }
+            result.total = data.total;
+            int length1 = result.rows.Length;
+            int length = length1+data.rows.Length;
+            //print(length);
+            RestDataProject[] array = result.rows;
+            result.rows = new RestDataProject[length];
+            for(int j =0;j<length;j++)
+            {
+                if(j<length1)
+                {
+                    result.rows[j] = array[j];
+                }
+                else
+                {
+                    result.rows[j] = data.rows[j];
+                }
+            }
+        }
+        //print(result.rows.Length);
+        return result;
+    }
+
+
+    //1、登陆验证
+    public RestDataRegister GetRegister(string username, string password)
+    {
+        string url = "http://jrdcar.com/front/login?phoneNum=" + username + "&password=" + password;
+        string result = Post(url);
+        //解析返回值
+        RestDataRegister data = JsonMapper.ToObject<RestDataRegister>(result);
+        return data;
+    }
+
+    //2、得到余额,url:http://jrdcar.com/front/memWallet
+    public double GetBalance(int playerId)
+    {
+        string url = "http://jrdcar.com/front/memWallet";
+        Dictionary<string, int> dic = new Dictionary<string, int>();
+        dic.Add("memID", playerId);
+        string str = HaveParameterGet(url, dic);
+        //解析json
+        RestDataBalance data = JsonMapper.ToObject<RestDataBalance>(str);
+        return data.count;
+    }
+
+    //3、得到众筹记录(众筹项目个数)
+    public RestDataJoinProject GetJoinProjects(int memberId )
+    {
+        string url = "http://jrdcar.com/front/joinProject";
+        Dictionary<string, int> dic = new Dictionary<string, int>();
+
+        dic.Add("memberId", memberId);  //用户ID
+        int total = JsonMapper.ToObject<RestDataJoinProject>(HaveParameterGet(url, dic)).total;  //得到总数
+        int count = total / 10 + 1;  //计算出要请求几页
+        string str = "";
+        RestDataJoinProject result = new RestDataJoinProject();
+        for (int i=0;i< count; i++)
+        {
+            if (dic.ContainsKey("offset") && dic.ContainsKey("limit"))
+            {
+                //第一次循环
+                dic["offset"] = 0 + i * 10;
+                dic["limit"] = 10;
+            }
+            else
+            {
+                dic.Add("offset", 0 + i * 10);
+                dic.Add("limit", 10);
+            }
+            str = HaveParameterGet(url, dic);
+            //数组叠加
+            RestDataJoinProject data = JsonMapper.ToObject<RestDataJoinProject>(str);
+            if (data.rows.Length == 0)
+            {
+                break;
+            }
+            result.total = data.total;
+            //如果是第一次循环请求，length1=0；否则，length1
+            int length1 = result.rows.Length;  
+            int length = length1 + data.rows.Length;  //之前的数组长度+这次请求得到结果的长度，总长度
+            RestDataProjectState[] array = result.rows;
+            result.rows = new RestDataProjectState[length];
+            for (int j = 0; j < length; j++)
+            {
+                if (j < length1)
+                {
+                    result.rows[j] = array[j];
+                }
+                else
+                {
+                    result.rows[j] = data.rows[j];
+                }
+            }
+        }
+        return result;
+
+    }
+
+    //得到项目详细
+    public RestDataProjectInfo GetProjectDetail(int id)
+    {
+        string url = "http://jrdcar.com/front/projectDetail";
+        Dictionary<string, int> dic = new Dictionary<string, int>();
+        dic.Add("id", id);
+        string str = HaveParameterGet(url, dic);
+        RestDataProjectInfo proInfo = JsonMapper.ToObject<RestDataProjectInfo>(str);
+        return proInfo;
+    }
+
+    //得到用户所拥有的红包
+    public RestDataRedPacketInfo GetRedPacket(int memberId)
+    {
+        string url = "http://jrdcar.com/front/memCoupons";
+        Dictionary<string, int> dic = new Dictionary<string, int>();
+
+        dic.Add("memID", memberId);  //用户ID
+        int total = JsonMapper.ToObject<RestDataRedPacketInfo>(HaveParameterGet(url, dic)).total;  //得到总数
+        int count = total / 10 + 1;  //计算出要请求几页
+        string str = "";
+        RestDataRedPacketInfo result = new RestDataRedPacketInfo();
+        for (int i = 0; i < count; i++)
+        {
+            if (dic.ContainsKey("page") && dic.ContainsKey("limit"))
+            {
+                //第一次循环
+                dic["page"] = 0 + i * 10;
+                dic["limit"] = 10;
+            }
+            else
+            {
+                dic.Add("page", 0 + i * 10);
+                dic.Add("limit", 10);
+            }
+            str = HaveParameterGet(url, dic);
+            //数组叠加
+            RestDataRedPacketInfo data = JsonMapper.ToObject<RestDataRedPacketInfo>(str);
+            if (data.rows.Length == 0)
+            {
+                break;
+            }
+            result.total = data.total;
+            //如果是第一次循环请求，length1=0；否则，length1
+            int length1 = result.rows.Length;
+            int length = length1 + data.rows.Length;  //之前的数组长度+这次请求得到结果的长度，总长度
+            RestDataRedPacketDetail[] array = result.rows;
+            result.rows = new RestDataRedPacketDetail[length];
+            for (int j = 0; j < length; j++)
+            {
+                if (j < length1)
+                {
+                    result.rows[j] = array[j];
+                }
+                else
+                {
+                    result.rows[j] = data.rows[j];
+                }
+            }
+        }
+        return result;
     }
 }

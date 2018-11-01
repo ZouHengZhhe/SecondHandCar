@@ -11,6 +11,18 @@ public class UIRegister : MonoBehaviour
     private Button _succBtn;       //登录成功界面的确定按钮
     private Button _failBtn;         //登录失败界面的确定按钮
 
+    private InputField _accountInput;     //账号输入框
+    private InputField _passwordInput;  //密码输入框
+
+    //登陆
+    public delegate void RegisterDel(string username,string password);
+    public RegisterDel RegisterCallback = null;  //登陆验证(在UIController中调用)
+    public RegisterDel RegisterSuccCallback = null;  //登陆成功
+
+
+    private string _username;
+    private string _password;
+
     // Use this for initialization
     private void Start()
     {
@@ -35,32 +47,16 @@ public class UIRegister : MonoBehaviour
         _registerBtn.onClick.AddListener(OnClickRegisterBtn);
         _succBtn.onClick.AddListener(OnClickSuccBtn);
         _failBtn.onClick.AddListener(OnClickFailBtn);
+
+        //获取输入框
+        _accountInput = this.transform.Find("AccountInput").GetComponent<InputField>();
+        _passwordInput = this.transform.Find("PasswordInput").GetComponent<InputField>();
     }
 
     //登陆按钮点击事件，判断是否登陆成功
     public void OnClickRegisterBtn()
     {
-        int data=Restful.Instance.OnRest(RestInterfaceName.RegisterRest);  //登陆验证
-        //Player.Instance.IsRegister = true;
-        if (data == 0)  //账号存在，登陆成功
-        {
-            Player.Instance.IsRegister = true;
-        }
-        else  //账号不存在登陆失败
-        {
-            Player.Instance.IsRegister = false;
-        }
-
-        if (Player.Instance.IsRegister)
-        {
-            SuccessImg.SetActive(true);
-            FailImg.SetActive(false);
-        }
-        else
-        {
-            SuccessImg.SetActive(false);
-            FailImg.SetActive(true);
-        }
+        RegisterCallback(_username,_password);
     }
 
     private void OnClickSuccBtn()
@@ -70,6 +66,7 @@ public class UIRegister : MonoBehaviour
         FailImg.SetActive(false);
 
         UIManager.Instance.ControlParentPages("MyPage");
+        RegisterSuccCallback(_username, _password);  //在UIController中调用
     }
 
     private void OnClickFailBtn()
@@ -77,5 +74,34 @@ public class UIRegister : MonoBehaviour
         //登录失败
         SuccessImg.SetActive(false);
         FailImg.SetActive(false);
+    }
+
+    //账号输入框赋值
+    public void OnAccountValueChanged()
+    {
+        _username = _accountInput.text;
+        //print(_username);
+    }
+
+    //密码输入框赋值
+    public void OnPasswordValueChanged()
+    {
+        _password = _passwordInput.text;
+        //print(_password);
+    }
+
+    //控制登陆成功和登陆失败页面的显示
+    public void ControlIsRegisterSuccess(bool isSuc)
+    {
+        if(isSuc)
+        {
+            SuccessImg.SetActive(true);
+            FailImg.SetActive(false);
+        }
+        else
+        {
+            SuccessImg.SetActive(false);
+            FailImg.SetActive(true);
+        }
     }
 }
