@@ -19,6 +19,12 @@ public class UIHome : MonoBehaviour
     private Text _projectsCountTxt;
     private Text _totalAssetsTxt;
 
+    //加载我的项目委托
+    public delegate void UpdateProjectPageDel(int index);
+    public UpdateProjectPageDel UpdateProjectPageCallback = null;
+    public delegate void UpdateProjectListDel();
+    public UpdateProjectListDel UpdateProjectsListCallback = null;
+
     private void Start()
     {
         InitUI();
@@ -99,9 +105,13 @@ public class UIHome : MonoBehaviour
 
     #region 按钮点击事件
 
+    //优质项目推荐，点击进入项目列表
     private void OnClickGoodProjectBtn()
     {
         UIManager.Instance.ControlParentPages("ProjectsPage");
+
+        //进入项目列表
+        UpdateProjectsListCallback();
     }
 
     private void OnClickAboutUsBtn()
@@ -117,21 +127,33 @@ public class UIHome : MonoBehaviour
     private void OnClickItem1Btn()
     {
         UIManager.Instance.ControlChildPages("MyProjectPage");
+
+        //加载我的项目
+        UpdateProjectPageCallback(1);
     }
 
     private void OnClickItem2Btn()
     {
         UIManager.Instance.ControlChildPages("MyProjectPage");
+
+        //加载我的项目
+        UpdateProjectPageCallback(2);
     }
 
     private void OnClickItem3Btn()
     {
         UIManager.Instance.ControlChildPages("MyProjectPage");
+
+        //加载我的项目
+        UpdateProjectPageCallback(3);
     }
 
     private void OnClickItem4Btn()
     {
         UIManager.Instance.ControlChildPages("MyProjectPage");
+
+        //加载我的项目
+        UpdateProjectPageCallback(4);
     }
 
     #endregion

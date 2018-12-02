@@ -13,6 +13,8 @@ public class UIMyPage : MonoBehaviour
 
     private Button _withDrawBtn;  //提现按钮
     private Button _rechargeBtn;  //充值按钮
+    private Image _withDrawBtnImg;  //提现按钮上的Image组件
+    private Image _rechargeBtnImg;  //充值按钮上的Image组件
     private Button _myRedPacketBtn;  //我的红包按钮
     private Button _myCrowdfundingBtn;  //我的众筹按钮
     private Button _fundDetailBtn;  //资金明细按钮
@@ -23,6 +25,7 @@ public class UIMyPage : MonoBehaviour
     public delegate void UpdateDel(); 
     public UpdateDel UpdateMyProjectsCallback =null;  //点击“我的众筹”触发，在RestController中被监听
     public UpdateDel UpdateMyRedPacketCallback = null;  //点击“我的红包”触发，在RestController中被监听
+    public UpdateDel UpdateMoneyDetailCallback = null;  //点击“资金明细”出发，在RestController中被监听
 
     void Start()
     {
@@ -32,6 +35,23 @@ public class UIMyPage : MonoBehaviour
     void Update()
     {
         ControlText();
+
+        if(Player.Instance.IsRegister)
+        {
+            //登陆状态
+            _withDrawBtn.enabled = true;
+            _rechargeBtn.enabled = true;
+            _withDrawBtnImg.color = new Color(1, 1, 1);
+            _rechargeBtnImg.color = new Color(1, 1, 1);
+        }
+        else
+        {
+            //未登录状态
+            _withDrawBtn.enabled = false;
+            _rechargeBtn.enabled = false;
+            _withDrawBtnImg.color = new Color(0.5f,0.5f,0.5f);
+            _rechargeBtnImg.color = new Color(0.5f, 0.5f, 0.5f);
+        }
     }
     
     //得到Text
@@ -45,6 +65,8 @@ public class UIMyPage : MonoBehaviour
         //得到按钮
         _withDrawBtn = this.transform.Find("WithdrawBtn").GetComponent<Button>();
         _rechargeBtn = this.transform.Find("RechargeBtn").GetComponent<Button>();
+        _withDrawBtnImg = _withDrawBtn.GetComponent<Image>();
+        _rechargeBtnImg = _rechargeBtn.GetComponent<Image>();
         _myRedPacketBtn = this.transform.Find("MyRedPacketBtn").GetComponent<Button>();
         _myCrowdfundingBtn = this.transform.Find("MyCrowdfundingBtn").GetComponent<Button>();
         _fundDetailBtn = this.transform.Find("FundDetailBtn").GetComponent<Button>();
@@ -140,7 +162,8 @@ public class UIMyPage : MonoBehaviour
     //资金明细按钮点击事件
     public void OnClickFundDetailBtn()
     {
-        UIManager.Instance.ControlChildPages("BuyHistoryPage");
+        UIManager.Instance.ControlChildPages("MoneyDetailPage");
+        UpdateMoneyDetailCallback();
     }
 
     //登录按钮点击事件

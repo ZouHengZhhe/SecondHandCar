@@ -58,7 +58,7 @@ public class UIManager : MonoBehaviour
         ChildPagesDic.Add("RechargePage", GameObject.Find("RechargePage"));
         ChildPagesDic.Add("MyPacketPage", GameObject.Find("MyPacketPage"));
         ChildPagesDic.Add("MyCrowdfunding", GameObject.Find("MyCrowdfunding"));
-        ChildPagesDic.Add("BuyHistoryPage", GameObject.Find("BuyHistoryPage"));
+        ChildPagesDic.Add("MoneyDetailPage", GameObject.Find("MoneyDetailPage"));
         ChildPagesDic.Add("AccountSettingPage", GameObject.Find("AccountSettingPage"));
         ChildPagesDic.Add("RegisterPage", GameObject.Find("RegisterPage"));
         //我的项目页面

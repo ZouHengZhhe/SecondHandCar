@@ -38,16 +38,16 @@ public class UICrowdfunding : MonoBehaviour
 
         //得到所有Item,并为按钮注册点击事件
         _itemsParent = this.transform.Find("Panel_Scroll/Panel_Grid");
-        for(int i = 0; i < _itemsParent.childCount; i++)
-        {
-            _btnList.Add(_itemsParent.GetChild(i).GetComponent<Button>());
-            _btnList[i].onClick.AddListener(
-                delegate ()
-                {
-                    OnClickItem(i);
-                }
-                );
-        }
+        //for(int i = 0; i < _itemsParent.childCount; i++)
+        //{
+        //    _btnList.Add(_itemsParent.GetChild(i).GetComponent<Button>());
+        //    _btnList[i].onClick.AddListener(
+        //        delegate ()
+        //        {
+        //            OnClickItem(i);
+        //        }
+        //        );
+        //}
 
         _testEmailUI = this.transform.parent.GetComponent<TestEmailUI>();
 
@@ -114,10 +114,10 @@ public class UICrowdfunding : MonoBehaviour
     }
 
     //Item按钮点击事件
-    private void OnClickItem(int index)
-    {
-        UIManager.Instance.ControlChildPages("MyProjectPage");
-    }
+    //private void OnClickItem(int index)
+    //{
+    //    UIManager.Instance.ControlChildPages("MyProjectPage");
+    //}
 
     #endregion 按钮点击事件
 }

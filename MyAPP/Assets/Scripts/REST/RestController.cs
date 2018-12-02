@@ -13,6 +13,8 @@ public class RestController : MonoBehaviour
     private UIStartPanel _uiStartPanel;
     private UIProjects _uiProjects;
     private UIMyProject _uiMyProject;
+    private UIMoneyDetail _uiMoneyDetail;
+    private UIWithDraw _uiWithDraw;
 
     //所有项目图片和状态
     //传入TestEmailUI中，用于更新项目图片
@@ -52,7 +54,16 @@ public class RestController : MonoBehaviour
 
         _uiMyPage.UpdateMyProjectsCallback += OnUpdateMyProjects;  //监听“我的众筹”
         _uiMyPage.UpdateMyRedPacketCallback += OnUpdateMyRedPacket;  //监听“我的红包”
-        _uiProjects.UpdateProjectPageCallback += LoadProjectPage;
+        _uiMyPage.UpdateMoneyDetailCallback += OnUpdateMoneyDetail;  //监听“资金明细”
+
+        _uiProjects.UpdateProjectPageCallback += LoadProjectPage;  //点击项目列表，加载我的项目
+        _uiHome.UpdateProjectPageCallback += LoadProjectPageInHome;  //点击轮播图，加载我的项目
+
+        _uiMoneyDetail = GameObject.Find("AppPage").transform.Find("MoneyDetailPage").GetComponent<UIMoneyDetail>();
+
+        //提现
+        _uiWithDraw = GameObject.Find("AppPage").transform.Find("WithDrawPage").GetComponent<UIWithDraw>();
+        _uiWithDraw.WithDrawCallback += WithDraw;
 
         //更新“Home”页面中的会员总数、众筹项目，总资产
         _uiManager = GameObject.Find("AppPage").GetComponent<UIManager>();
@@ -61,6 +72,7 @@ public class RestController : MonoBehaviour
         _uiManager.UpdateMyPageCallback += OnUpdateMyPage;
 
         _loadUI = GameObject.Find("AppPage").GetComponent<TestEmailUI>();
+        _uiHome.UpdateProjectsListCallback += OnUpdateProjectsPage;
 
         //得到会员总数、众筹项目，总资产
         RestDataStatistics statistics = _restful.GetStatistics();
@@ -126,6 +138,18 @@ public class RestController : MonoBehaviour
             ProjectList[i].City = restDataProList.rows[i].city;
 
             StartCoroutine(DownloadTexture(value, str, i));
+
+            //手机端
+            if (i < 11)
+            {
+                ProjectList[i].SpriteTex = Resources.Load<Sprite>((i + 1).ToString());
+            }
+            else
+            {
+                int num = Random.Range(1, 12);
+                ProjectList[i].SpriteTex = Resources.Load<Sprite>((i).ToString());
+            }
+            //print(str);
         }
     }
 
@@ -148,6 +172,7 @@ public class RestController : MonoBehaviour
     {
         _loadUI.InitProjects(_projectsNum);
     }
+
 
     //项目加载时，更新“Home”页面中的会员总数、众筹项目，总资产
     private void LoadControl(int memCount, int projectsCount, double totalAssets)
@@ -260,10 +285,49 @@ public class RestController : MonoBehaviour
         }
     }
 
+    //加载资金明细
+    private void OnUpdateMoneyDetail()
+    {
+        if (Player.Instance.IsRegister)
+        {
+            _uiMoneyDetail.UpdateBalance(Player.Instance.Balance);
+        }
+        else
+        {
+            _uiMoneyDetail.UpdateBalance(0);
+        }
+    }
+
     //加载项目页面(MyProjectPage)
     private void LoadProjectPage(int index)
     {
         _uiMyProject.LoadMyProject(index);
+    }
+
+    private void LoadProjectPageInHome(int index)
+    {
+        switch (index)
+        {
+            case 1:
+                _uiMyProject.LoadMyProject(ProjectList.Count - 4);
+                break;
+            case 2:
+                _uiMyProject.LoadMyProject(ProjectList.Count - 3);
+                break;
+            case 3:
+                _uiMyProject.LoadMyProject(ProjectList.Count - 2);
+                break;
+            case 4:
+                _uiMyProject.LoadMyProject(ProjectList.Count-1);
+                break;
+        }
+    }
+
+    //提现,并弹出信息提示框进行提示
+    private void WithDraw(RestDataWithDraw data)
+    {
+        string result = _restful.PostWithDraw(data);
+        _uiWithDraw.ShowMsg(result);
     }
 
     //登陆验证
@@ -312,13 +376,12 @@ public class RestController : MonoBehaviour
     {
         WWW www = new WWW(url);
         yield return www;
-        Texture2D tex2d = www.texture;
-        Sprite m_sprite = Sprite.Create(tex2d, new Rect(0, 0, tex2d.width, tex2d.height), new Vector2(0, 0));
-        ProjectList[index].SpriteTex = m_sprite;
+        //PC端
+        //Texture2D tex2d = www.texture;
+        //Sprite m_sprite = Sprite.Create(tex2d, new Rect(0, 0, tex2d.width, tex2d.height), new Vector2(0, 0));
+        //ProjectList[index].SpriteTex = m_sprite;
         _loadTextureNum++;
         string value = (_loadTextureNum * 100 / _projectsNum).ToString();
-        //string value = string.Format("{0:F}", data);  //余额保留两位小数
-        //开始面板加载进度值变化
-        _uiStartPanel.ChangeLoadValue(value);
+        _uiStartPanel.ChangeLoadValue(value);  //加载进度显示
     }
 }

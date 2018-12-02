@@ -26,20 +26,15 @@ public class Restful : MonoBehaviour
     private void Awake()
     {
         _instance = this;
+        //GetProjectsList();
     }
 
     //private string _getUrl= "http://jrdcar.com/front/totalAssets";
     private string _totalAssetsUrl = "http://jrdcar.com/front/totalAssets";
-
-    // Use this for initialization
+    
     private void Start()
     {
-        //GetMemCount("http://jrdcar.com/front/countMem");
-        //GetTotalAssets("http://jrdcar.com/front/totalAssets");
-        //GetAllProjects("http://jrdcar.com/front/projectList");
-        //GetProjects(7);
-        //GetStatistics();
-        GetProjectsList();
+        
     }
 
     //累计注册会员数
@@ -322,12 +317,12 @@ public class Restful : MonoBehaviour
         RestDataProjectList result = new RestDataProjectList();
         for (int i = 0; i < count; i++)
         {
-            if(dic.ContainsKey("offset")&&dic.ContainsKey("limit"))
+            if(dic.ContainsKey("offset")&&dic.ContainsKey("limit"))  //非第一次加载
             {
                 dic["offset"] = 0 + i * 10;
                 dic["limit"] = 10;
             }
-            else
+            else  //第一次加载
             {
                 dic.Add("offset", 0 + i * 10);
                 dic.Add("limit", 10);
@@ -335,31 +330,30 @@ public class Restful : MonoBehaviour
             
             str = HaveParameterGet(url, dic);
             //数组叠加
-            RestDataProjectList data = JsonMapper.ToObject<RestDataProjectList>(str);
+            RestDataProjectList data = JsonMapper.ToObject<RestDataProjectList>(str);//rest接口获得数据，并进行解析
             if (data.rows.Length==0)
             {
                 break;
             }
             result.total = data.total;
-            int length1 = result.rows.Length;
-            int length = length1+data.rows.Length;
-            //print(length);
-            RestDataProject[] array = result.rows;
-            result.rows = new RestDataProject[length];
-            for(int j =0;j<length;j++)
+            int length = result.rows.Length;
+            int length1 = length+data.rows.Length;
+            RestDataProject[] array = result.rows;   //将已经取得的结果存入array数组
+            result.rows = new RestDataProject[length1];
+            for(int j =0;j<length1;j++)
             {
-                if(j<length1)
+                if(j<length)  //将之前的结果重新存入result
                 {
                     result.rows[j] = array[j];
                 }
                 else
                 {
-                    result.rows[j] = data.rows[j];
+                    result.rows[j] = data.rows[j-length];
                 }
             }
         }
-        //print(result.rows.Length);
         return result;
+        
     }
 
 
@@ -453,6 +447,7 @@ public class Restful : MonoBehaviour
     public RestDataRedPacketInfo GetRedPacket(int memberId)
     {
         string url = "http://jrdcar.com/front/memCoupons";
+        //string url = "http://jrdcar.com/front/availableCoupons";
         Dictionary<string, int> dic = new Dictionary<string, int>();
 
         dic.Add("memID", memberId);  //用户ID
@@ -499,5 +494,17 @@ public class Restful : MonoBehaviour
             }
         }
         return result;
+    }
+
+    //提现接口
+    public string PostWithDraw(RestDataWithDraw data)
+    {
+        string url = "http://jrdcar.com/front/withdrawCash";
+        string content = JsonMapper.ToJson(data);
+        print("content : " + content);
+        string result = Post(url, content);
+        print(result);
+        RestDataWithDrawBack back= JsonMapper.ToObject<RestDataWithDrawBack>(result);
+        return back.msg;
     }
 }
