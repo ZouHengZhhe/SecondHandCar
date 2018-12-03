@@ -31,10 +31,10 @@ public class Restful : MonoBehaviour
 
     //private string _getUrl= "http://jrdcar.com/front/totalAssets";
     private string _totalAssetsUrl = "http://jrdcar.com/front/totalAssets";
-    
+
     private void Start()
     {
-        
+
     }
 
     //累计注册会员数
@@ -213,6 +213,35 @@ public class Restful : MonoBehaviour
         return result;
     }
 
+    //带参数的Get请求，同步
+    private string HaveParameterGet(string url, int memId, double money)
+    {
+        string result = "";
+        StringBuilder builder = new StringBuilder();
+        builder.Append(url);
+        builder.Append("?");
+        builder.AppendFormat("{0}={1}", "memID", memId);
+        builder.Append("&");
+        builder.AppendFormat("{0}={1}", "money", money);
+        HttpWebRequest req = (HttpWebRequest)WebRequest.Create(builder.ToString());
+        //添加参数
+        HttpWebResponse resp = (HttpWebResponse)req.GetResponse();
+        Stream stream = resp.GetResponseStream();
+        try
+        {
+            //获取内容
+            using (StreamReader reader = new StreamReader(stream))
+            {
+                result = reader.ReadToEnd();
+            }
+        }
+        finally
+        {
+            stream.Close();
+        }
+        return result;
+    }
+
     //不带参数的Post请求
     private string Post(string url)
     {
@@ -264,13 +293,56 @@ public class Restful : MonoBehaviour
         return result;
     }
 
+    //带参数的Post请求，指定键值对
+    private string Post(string url, Dictionary<string, int> dic1,Dictionary<string,string> dic2)
+    {
+        string result = "";
+        HttpWebRequest req = (HttpWebRequest)WebRequest.Create(url);
+        req.Method = "POST";
+        req.ContentType = "application/x-www-form-urlencoded";
+        #region 添加Post 参数
+        StringBuilder builder = new StringBuilder();
+        int i = 0;
+        foreach (var item in dic1)
+        {
+            if (i > 0)
+                builder.Append("&");
+            builder.AppendFormat("{0}={1}", item.Key, item.Value);
+            i++;
+        }
+        foreach (var item in dic2)
+        {
+            if (i > 0)
+                builder.Append("&");
+            builder.AppendFormat("{0}={1}", item.Key, item.Value);
+            i++;
+        }
+        byte[] data = Encoding.UTF8.GetBytes(builder.ToString());
+        req.ContentLength = data.Length;
+        using (Stream reqStream = req.GetRequestStream())
+        {
+            reqStream.Write(data, 0, data.Length);
+            reqStream.Close();
+        }
+        #endregion
+        HttpWebResponse resp = (HttpWebResponse)req.GetResponse();
+        Stream stream = resp.GetResponseStream();
+        //获取响应内容
+        using (StreamReader reader = new StreamReader(stream, Encoding.UTF8))
+        {
+            result = reader.ReadToEnd();
+        }
+        return result;
+    }
+
     //带参数的Post请求，指定发送字符串内容
     private string Post(string url, string content)
     {
         string result = "";
         HttpWebRequest req = (HttpWebRequest)WebRequest.Create(url);
         req.Method = "POST";
-        req.ContentType = "application/x-www-form-urlencoded";
+        //req.ContentType = "application/x-www-form-urlencoded";
+        req.ContentType = "application/json";
 
         #region 添加Post 参数
         byte[] data = Encoding.UTF8.GetBytes(content);
@@ -317,7 +389,7 @@ public class Restful : MonoBehaviour
         RestDataProjectList result = new RestDataProjectList();
         for (int i = 0; i < count; i++)
         {
-            if(dic.ContainsKey("offset")&&dic.ContainsKey("limit"))  //非第一次加载
+            if (dic.ContainsKey("offset") && dic.ContainsKey("limit"))  //非第一次加载
             {
                 dic["offset"] = 0 + i * 10;
                 dic["limit"] = 10;
@@ -327,33 +399,33 @@ public class Restful : MonoBehaviour
                 dic.Add("offset", 0 + i * 10);
                 dic.Add("limit", 10);
             }
-            
+
             str = HaveParameterGet(url, dic);
             //数组叠加
             RestDataProjectList data = JsonMapper.ToObject<RestDataProjectList>(str);//rest接口获得数据，并进行解析
-            if (data.rows.Length==0)
+            if (data.rows.Length == 0)
             {
                 break;
             }
             result.total = data.total;
             int length = result.rows.Length;
-            int length1 = length+data.rows.Length;
+            int length1 = length + data.rows.Length;
             RestDataProject[] array = result.rows;   //将已经取得的结果存入array数组
             result.rows = new RestDataProject[length1];
-            for(int j =0;j<length1;j++)
+            for (int j = 0; j < length1; j++)
             {
-                if(j<length)  //将之前的结果重新存入result
+                if (j < length)  //将之前的结果重新存入result
                 {
                     result.rows[j] = array[j];
                 }
                 else
                 {
-                    result.rows[j] = data.rows[j-length];
+                    result.rows[j] = data.rows[j - length];
                 }
             }
         }
         return result;
-        
+
     }
 
 
@@ -380,7 +452,7 @@ public class Restful : MonoBehaviour
     }
 
     //3、得到众筹记录(众筹项目个数)
-    public RestDataJoinProject GetJoinProjects(int memberId )
+    public RestDataJoinProject GetJoinProjects(int memberId)
     {
         string url = "http://jrdcar.com/front/joinProject";
         Dictionary<string, int> dic = new Dictionary<string, int>();
@@ -390,7 +462,7 @@ public class Restful : MonoBehaviour
         int count = total / 10 + 1;  //计算出要请求几页
         string str = "";
         RestDataJoinProject result = new RestDataJoinProject();
-        for (int i=0;i< count; i++)
+        for (int i = 0; i < count; i++)
         {
             if (dic.ContainsKey("offset") && dic.ContainsKey("limit"))
             {
@@ -412,7 +484,7 @@ public class Restful : MonoBehaviour
             }
             result.total = data.total;
             //如果是第一次循环请求，length1=0；否则，length1
-            int length1 = result.rows.Length;  
+            int length1 = result.rows.Length;
             int length = length1 + data.rows.Length;  //之前的数组长度+这次请求得到结果的长度，总长度
             RestDataProjectState[] array = result.rows;
             result.rows = new RestDataProjectState[length];
@@ -504,17 +576,35 @@ public class Restful : MonoBehaviour
         print("content : " + content);
         string result = Post(url, content);
         print(result);
-        RestDataWithDrawBack back= JsonMapper.ToObject<RestDataWithDrawBack>(result);
+        RestDataWithDrawBack back = JsonMapper.ToObject<RestDataWithDrawBack>(result);
         return back.msg;
     }
 
     //获取满足使用条件的红包
-    public List<RestDataPackageCanUse> GetPackageCanUse(int memId,double money)
+    public List<RestDataPackageCanUse> GetPackageCanUse(int memId, double money)
     {
         string url = "http://jrdcar.com/front/availableCoupons";
-        string result = NoParameterGet(url);
+        string result = HaveParameterGet(url, memId, money);
         print(result);
         List<RestDataPackageCanUse> data = JsonMapper.ToObject<List<RestDataPackageCanUse>>(result);
         return data;
+    }
+
+    //项目支持
+    public string PostCommitRaise(RestDataCommitRaise data)
+    {
+        string url = "http://jrdcar.com/front/commitRaise";
+        Dictionary<string, int> dic1 = new Dictionary<string, int>();
+        Dictionary<string, string> dic2 = new Dictionary<string, string>();
+
+        dic1.Add("userId", data.userId);
+        dic1.Add("count", data.count);
+        dic1.Add("projectId", data.projectId);
+        dic2.Add("payPwd", data.payPwd);
+        dic2.Add("couponInfo", data.couponInfo);
+
+        string result = Post(url, dic1, dic2);
+        RestDataCommitRaiseReturn returnData = JsonMapper.ToObject<RestDataCommitRaiseReturn>(result);
+        return returnData.msg;
     }
 }

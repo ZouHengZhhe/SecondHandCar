@@ -67,7 +67,8 @@ public class RestController : MonoBehaviour
         _uiWithDraw.WithDrawCallback += WithDraw;
 
         //我的项目
-        _uiMyProject.GetPackageCanUseCallback += OnGetPackageCanUse;
+        _uiMyProject.GetPackageCanUseCallback += OnGetPackageCanUse;  //得到满足条件的红包
+        _uiMyProject.SubmitCommitRaiseCallback += OnCommitRaise;  //项目支持
 
         //更新“Home”页面中的会员总数、众筹项目，总资产
         _uiManager = GameObject.Find("AppPage").GetComponent<UIManager>();
@@ -385,6 +386,13 @@ public class RestController : MonoBehaviour
         {
             PackageCanUseList.Add(r);
         }
+    }
+
+    //项目支持
+    private void OnCommitRaise(RestDataCommitRaise data)
+    {
+        string str = _restful.PostCommitRaise(data);
+        _uiMyProject.ShowMsg(str);
     }
 
     IEnumerator DownloadTexture(int id, string url, int index)

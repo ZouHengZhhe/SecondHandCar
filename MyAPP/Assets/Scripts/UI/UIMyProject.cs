@@ -23,6 +23,7 @@ public class UIMyProject : MonoBehaviour
     private Text _cityTxt;  //城市
 
     private Button _supportBtn;  //支持按钮
+    private Image _supportBtnImg;  //支持按钮上的图片
     private GameObject _payPage;  //支持页面
     //支持页面上的元素
     private Button _submitBtn;  //支持页面上的提交按钮
@@ -36,16 +37,20 @@ public class UIMyProject : MonoBehaviour
     private string _count;
     private string _pwd;
     private Dropdown _packageDropDown;  //红包选择下拉框
+    private int _packageIndex;  //选择的红包索引
 
 
     private GameObject _msgPage;  //提示信息页面（显示支付提交后，后台返回的消息）
     private Text _msgTxt;   //显示提示信息
     private Button _ensureBtn;  //确定按钮
 
+    //获取满足条件的红包
     public delegate void GetPackageCanUseDel(double money);
     public GetPackageCanUseDel GetPackageCanUseCallback = null;
-
-    // Use this for initialization
+    //提交支持信息
+    public delegate void SubmitCommitRaiseDel(RestDataCommitRaise data);
+    public SubmitCommitRaiseDel SubmitCommitRaiseCallback = null;
+    
     private void Awake()
     {
         rect = this.transform.Find("Panel").GetChild(0).GetComponent<ScrollRect>();
@@ -68,6 +73,7 @@ public class UIMyProject : MonoBehaviour
         //支持按钮
         _supportBtn = this.transform.Find("Panel/Scroll View/Content/SupportBtn").GetComponent<Button>();
         _supportBtn.onClick.AddListener(OnClickSupportBtn);
+        _supportBtnImg = _supportBtn.GetComponent<Image>();
 
         //得到支持页面，和支持页面上的元素
         _payPage = this.transform.Find("PayPage").gameObject;
@@ -84,6 +90,9 @@ public class UIMyProject : MonoBehaviour
         _countInput.onValueChanged.AddListener(OnValueChangeCountInput);
         _pwdInput.onValueChanged.AddListener(OnValueChangePwdInput);
         _packageDropDown= _payPage.transform.GetChild(0).Find("PacketDropdown").GetComponent<Dropdown>();
+        _packageDropDown.onValueChanged.AddListener(OnValueChangedPackageDrop);
+        _packageDropDown.options.Clear();
+        Init();
         _payPage.SetActive(false);
 
         //提示信息页面
@@ -92,6 +101,32 @@ public class UIMyProject : MonoBehaviour
         _ensureBtn = _msgPage.transform.GetChild(0).Find("EnsureBtn").GetComponent<Button>();
         _ensureBtn.onClick.AddListener(OnClickEnsureBtn);
         _msgPage.SetActive(false);
+    }
+
+    private void Update()
+    {
+        if (Player.Instance.IsRegister)
+        {
+            _supportBtn.enabled = true;
+            _supportBtnImg.color = new Color(1, 1, 1);
+        }
+        else
+        {
+            _supportBtn.enabled = false;
+            _supportBtnImg.color = new Color(0.5f, 0.5f, 0.5f);
+        }
+    }
+
+    //初始化输入框和红包选择框
+    private void Init()
+    {
+        //初始化输入框
+        _countInput.text = "";
+        _pwdInput.text = "";
+        //初始化红包选择框
+        Dropdown.OptionData data = new Dropdown.OptionData();
+        data.text = "选择优惠卷";
+        _packageDropDown.options.Add(data);
     }
 
     //每次进入我的项目时，进行加载（加载文字、图片等）
@@ -150,23 +185,41 @@ public class UIMyProject : MonoBehaviour
         data.projectId = UIMyProjectMsg.Instance.ProjectId;
         data.count = Int32.Parse(_count);
         data.payPwd = _pwd;
-        //TODO:红包信息
+        //红包信息
+        if (RestController.Instance.PackageCanUseList.Count == 0)
+        {
+            data.couponInfo = "";
+        }
+        else
+        {
+            RestDataPackageCanUse r = RestController.Instance.PackageCanUseList[_packageIndex];
+            string str = r.couponSize + "_" + r.id;
+            data.couponInfo = str;
+        }
 
         //弹出信息提示框
-        //TODO:(委托)
-        _msgPage.SetActive(true);
-
+        //(委托)
+        if(data.payPwd.Length==6)
+        {
+            SubmitCommitRaiseCallback(data);
+        }
+        else
+        {
+            ShowMsg("密码必须是6位数字");
+        }
     }
 
     //支持页面上的关闭按钮点击事件
     public void OnClickCloseBtn()
     {
+        Init();
         _payPage.SetActive(false);
     }
 
     //确定按钮点击事件
     public void OnClickEnsureBtn()
     {
+        Init();
         //关闭提示信息页面
         _msgPage.SetActive(false);
 
@@ -188,6 +241,12 @@ public class UIMyProject : MonoBehaviour
     private void OnValueChangePwdInput(string str)
     {
         _pwd = str;
+    }
+
+    //红包下拉框
+    private void OnValueChangedPackageDrop(int index)
+    {
+        _packageIndex = index;
     }
 
     private void OnDisable()
@@ -232,6 +291,7 @@ public class UIMyProject : MonoBehaviour
     //提示页面显示消息
     public void ShowMsg(string msg)
     {
-        
+        _msgPage.SetActive(true);
+        _msgTxt.text = msg;
     }
 }
