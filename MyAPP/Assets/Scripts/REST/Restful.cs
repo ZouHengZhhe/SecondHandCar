@@ -507,4 +507,14 @@ public class Restful : MonoBehaviour
         RestDataWithDrawBack back= JsonMapper.ToObject<RestDataWithDrawBack>(result);
         return back.msg;
     }
+
+    //获取满足使用条件的红包
+    public List<RestDataPackageCanUse> GetPackageCanUse(int memId,double money)
+    {
+        string url = "http://jrdcar.com/front/availableCoupons";
+        string result = NoParameterGet(url);
+        print(result);
+        List<RestDataPackageCanUse> data = JsonMapper.ToObject<List<RestDataPackageCanUse>>(result);
+        return data;
+    }
 }

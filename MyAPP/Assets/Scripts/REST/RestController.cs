@@ -23,6 +23,7 @@ public class RestController : MonoBehaviour
     public List<Project> MyProjectsInList = new List<Project>();  //我的在投中的众筹项目
     public List<Project> MyProjectsEndList = new List<Project>();  // //我的已结束的众筹项目
     public List<RestDataRedPacketDetail> RedPacketList = new List<RestDataRedPacketDetail>();  //我的红包列表
+    public List<RestDataPackageCanUse> PackageCanUseList=new List<RestDataPackageCanUse>();  //满足使用条件的红包列表
 
     private Restful _restful;
     //无限加载
@@ -64,6 +65,9 @@ public class RestController : MonoBehaviour
         //提现
         _uiWithDraw = GameObject.Find("AppPage").transform.Find("WithDrawPage").GetComponent<UIWithDraw>();
         _uiWithDraw.WithDrawCallback += WithDraw;
+
+        //我的项目
+        _uiMyProject.GetPackageCanUseCallback += OnGetPackageCanUse;
 
         //更新“Home”页面中的会员总数、众筹项目，总资产
         _uiManager = GameObject.Find("AppPage").GetComponent<UIManager>();
@@ -369,6 +373,17 @@ public class RestController : MonoBehaviour
         else
         {
             _uiRegister.ControlIsRegisterSuccess(false);
+        }
+    }
+
+    //获取满足使用条件的红包
+    private void OnGetPackageCanUse(double money)
+    {
+        List<RestDataPackageCanUse> data= _restful.GetPackageCanUse(Player.Instance.ID, money);
+        PackageCanUseList.Clear();
+        foreach (RestDataPackageCanUse r in data)
+        {
+            PackageCanUseList.Add(r);
         }
     }
 

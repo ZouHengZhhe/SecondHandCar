@@ -42,6 +42,9 @@ public class UIMyProject : MonoBehaviour
     private Text _msgTxt;   //显示提示信息
     private Button _ensureBtn;  //确定按钮
 
+    public delegate void GetPackageCanUseDel(double money);
+    public GetPackageCanUseDel GetPackageCanUseCallback = null;
+
     // Use this for initialization
     private void Awake()
     {
@@ -118,7 +121,7 @@ public class UIMyProject : MonoBehaviour
 
 
         _licenseTimeTxt.text = RestController.Instance.ProjectDetailList[index].licenseTime;
-        print(RestController.Instance.ProjectDetailList[index].kilometers);
+        //print(RestController.Instance.ProjectDetailList[index].kilometers);
         if (!string.IsNullOrEmpty(RestController.Instance.ProjectDetailList[index].kilometers))
         {
             _kilometersTxt.text = RestController.Instance.ProjectDetailList[index].kilometers + "KM";
@@ -171,9 +174,15 @@ public class UIMyProject : MonoBehaviour
         _payPage.SetActive(false);
     }
 
+    //支持数量输入框
     private void OnValueChangeCountInput(string str)
     {
         _count = str;
+        int count=Int32.Parse(_count);
+        int min=Int32.Parse(UIMyProjectMsg.Instance.MinAmount);
+        double money =(double) (count * min);
+        GetPackageCanUseCallback(money);
+        LoadPackageInput();
     }
 
     private void OnValueChangePwdInput(string str)
@@ -197,27 +206,32 @@ public class UIMyProject : MonoBehaviour
         _totalTxt.text = UIMyProjectMsg.Instance.TargetAmount;
         _remainTxt.text = UIMyProjectMsg.Instance.RemainAmount;
         _unitPriceTxt.text = UIMyProjectMsg.Instance.MinAmount;
-        //加载红包下拉框
-        List<string> testList = new List<string>();
-        testList.Add("1");
-        testList.Add("2");
-        testList.Add("3");
-        testList.Add("4");
-        testList.Add("5");
-        testList.Add("6");
-        _packageDropDown.options.Clear();
-        foreach(string s in testList)
+      
+    }
+
+    //加载红包选择框
+    private void LoadPackageInput()
+    {
+        if (RestController.Instance.PackageCanUseList.Count == 0)
         {
-            Dropdown.OptionData data = new Dropdown.OptionData();
-            data.text = s;
-            _packageDropDown.options.Add(data);
+            _packageDropDown.options.Clear();
+            _packageDropDown.captionText.text = "无可用红包";
         }
-        _packageDropDown.captionText.text = "无可用红包";
+        else
+        {
+            _packageDropDown.options.Clear();
+            foreach (RestDataPackageCanUse r in RestController.Instance.PackageCanUseList)
+            {
+                Dropdown.OptionData data = new Dropdown.OptionData();
+                data.text = r.couponSize;
+                _packageDropDown.options.Add(data);
+            }
+        }
     }
 
     //提示页面显示消息
     public void ShowMsg(string msg)
     {
-
+        
     }
 }
