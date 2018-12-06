@@ -585,7 +585,7 @@ public class Restful : MonoBehaviour
     {
         string url = "http://jrdcar.com/front/availableCoupons";
         string result = HaveParameterGet(url, memId, money);
-        print(result);
+        //print(result);
         List<RestDataPackageCanUse> data = JsonMapper.ToObject<List<RestDataPackageCanUse>>(result);
         return data;
     }

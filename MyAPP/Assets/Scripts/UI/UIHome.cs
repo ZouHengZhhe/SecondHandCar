@@ -55,7 +55,7 @@ public class UIHome : MonoBehaviour
         _memCountTxt = this.transform.Find("MemCount").Find("ValueTxt").GetComponent<Text>();
         _projectsCountTxt = this.transform.Find("ProjectsCount").Find("ValueTxt").GetComponent<Text>();
         _totalAssetsTxt = this.transform.Find("TotalAssets").Find("ValueTxt").GetComponent<Text>();
-
+        //print(_memCountTxt == null);
         //得到四个轮播图
         for(int i=0;i<4;i++)
         {
@@ -65,6 +65,8 @@ public class UIHome : MonoBehaviour
 
     public void ControlThreeTextInfo(int memCount,int projectsCount,double totalAssets)
     {
+        //print(_memCountTxt == null);
+        //print(memCount);
         _memCountTxt.text = memCount.ToString();
         _projectsCountTxt.text = projectsCount.ToString();
         _totalAssetsTxt.text = totalAssets.ToString();
@@ -156,5 +158,14 @@ public class UIHome : MonoBehaviour
         UpdateProjectPageCallback(4);
     }
 
+    private void OnDestroy()
+    {
+        UpdateProjectPageCallback = null;
+        UpdateProjectsListCallback = null;
+    }
+    
+
     #endregion
+
+
 }

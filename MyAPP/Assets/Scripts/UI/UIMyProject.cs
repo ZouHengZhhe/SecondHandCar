@@ -231,7 +231,15 @@ public class UIMyProject : MonoBehaviour
     private void OnValueChangeCountInput(string str)
     {
         _count = str;
-        int count=Int32.Parse(_count);
+        int count = 0;
+        if(String.IsNullOrEmpty(_count))
+        {
+            count = 0;
+        }
+        else
+        {
+            count = Int32.Parse(_count);
+        }
         int min=Int32.Parse(UIMyProjectMsg.Instance.MinAmount);
         double money =(double) (count * min);
         GetPackageCanUseCallback(money);
@@ -265,7 +273,8 @@ public class UIMyProject : MonoBehaviour
         _totalTxt.text = UIMyProjectMsg.Instance.TargetAmount;
         _remainTxt.text = UIMyProjectMsg.Instance.RemainAmount;
         _unitPriceTxt.text = UIMyProjectMsg.Instance.MinAmount;
-      
+        _packageDropDown.options.Clear();
+        _packageDropDown.captionText.text = "选择可用优惠卷";
     }
 
     //加载红包选择框

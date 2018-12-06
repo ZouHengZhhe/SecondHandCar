@@ -24,7 +24,7 @@ public class RestController : MonoBehaviour
     public List<Project> MyProjectsInList = new List<Project>();  //我的在投中的众筹项目
     public List<Project> MyProjectsEndList = new List<Project>();  // //我的已结束的众筹项目
     public List<RestDataRedPacketDetail> RedPacketList = new List<RestDataRedPacketDetail>();  //我的红包列表
-    public List<RestDataPackageCanUse> PackageCanUseList=new List<RestDataPackageCanUse>();  //满足使用条件的红包列表
+    public List<RestDataPackageCanUse> PackageCanUseList = new List<RestDataPackageCanUse>();  //满足使用条件的红包列表
 
     private Restful _restful;
     //无限加载
@@ -34,8 +34,8 @@ public class RestController : MonoBehaviour
     private int _projectsNum = 0;
 
     //图片下载
-    private List<string> _pathList=new List<string>();  //存储图片的路径
-    private string _dic="Pic";  //存储图片的文件夹
+    private List<string> _pathList = new List<string>();  //存储图片的路径
+    private string _dic = "Pic";  //存储图片的文件夹
 
     private void Awake()
     {
@@ -45,6 +45,7 @@ public class RestController : MonoBehaviour
     // Use this for initialization
     void Start()
     {
+        //print("start");
         //得到Restful组件
         _restful = this.transform.GetComponent<Restful>();
 
@@ -55,8 +56,8 @@ public class RestController : MonoBehaviour
         _uiHome = GameObject.Find("AppPage").transform.Find("HomePage").GetComponent<UIHome>();
         _uiMyPage = GameObject.Find("AppPage").transform.Find("MyPage").GetComponent<UIMyPage>();
         _uiStartPanel = GameObject.Find("AppPage").transform.Find("StartPanel").GetComponent<UIStartPanel>();
-        _uiProjects= GameObject.Find("AppPage").transform.Find("ProjectsPage/Panel_Scroll/Panel_Grid").GetComponent<UIProjects>();
-        _uiMyProject= GameObject.Find("AppPage").transform.Find("MyProjectPage").GetComponent<UIMyProject>();
+        _uiProjects = GameObject.Find("AppPage").transform.Find("ProjectsPage/Panel_Scroll/Panel_Grid").GetComponent<UIProjects>();
+        _uiMyProject = GameObject.Find("AppPage").transform.Find("MyProjectPage").GetComponent<UIMyProject>();
 
         _uiMyPage.UpdateMyProjectsCallback += OnUpdateMyProjects;  //监听“我的众筹”
         _uiMyPage.UpdateMyRedPacketCallback += OnUpdateMyRedPacket;  //监听“我的红包”
@@ -91,7 +92,21 @@ public class RestController : MonoBehaviour
         int projectsCount = statistics.data.projectCount;
         LoadControl(memCount, projectsCount, totalAssets);
 
+        AnalysisProjectsListRest();
+
+        StartCoroutine(LoadPic());
     }
+
+    IEnumerator LoadPic()
+    {
+        yield return new WaitForSeconds(1);
+
+        for (int i = 0; i < ProjectList.Count; i++)
+        {
+            StartCoroutine(DownloadTexture(i));
+        }
+    }
+
 
     private void Update()
     {
@@ -114,9 +129,9 @@ public class RestController : MonoBehaviour
             _uiManager.ShowApp();
 
             _loadTextureNum = 0;
+
+            //AnalysisProjectsListRest();
         }
-
-
     }
 
     //解析项目列表接口，下载图片
@@ -135,7 +150,7 @@ public class RestController : MonoBehaviour
 
         for (int i = 0; i < restDataProList.rows.Length; i++)
         {
-            int value = int.Parse(restDataProList.rows[i].id);
+            int value = int.Parse(restDataProList.rows[i].id);  //项目id
             string str = "jrdcar.com" + restDataProList.rows[i].mainUrl;
 
             ProjectList[i].Url = str;  //图片URL赋值
@@ -147,19 +162,8 @@ public class RestController : MonoBehaviour
             ProjectList[i].SupportNum = restDataProList.rows[i].supportNum;
             ProjectList[i].City = restDataProList.rows[i].city;
 
-            StartCoroutine(DownloadTexture(value, str, i));
+            //StartCoroutine(DownloadTexture(value, str, i));
 
-            ////手机端
-            //if (i < 11)
-            //{
-            //    ProjectList[i].SpriteTex = Resources.Load<Sprite>((i + 1).ToString());
-            //}
-            //else
-            //{
-            //    int num = Random.Range(1, 12);
-            //    ProjectList[i].SpriteTex = Resources.Load<Sprite>((i).ToString());
-            //}
-            //print(str);
         }
     }
 
@@ -252,8 +256,8 @@ public class RestController : MonoBehaviour
 
                 }
             }
-            
-            
+
+
             //加载在投中的项目个数
             _loadUI.InitMyProjectsIn(MyProjectsInList.Count);
         }
@@ -277,13 +281,13 @@ public class RestController : MonoBehaviour
         {
             RestDataRedPacketInfo rpInfo = _restful.GetRedPacket(Player.Instance.ID);
             count = rpInfo.total;
-            for(int i=0;i<count;i++)
+            for (int i = 0; i < count; i++)
             {
                 if (rpInfo.rows[i].state == "未使用")  //把未使用的红包放进列表
                 {
                     RedPacketList.Add(rpInfo.rows[i]);
                 }
-                
+
             }
 
             //加载红包个数
@@ -316,6 +320,7 @@ public class RestController : MonoBehaviour
 
     private void LoadProjectPageInHome(int index)
     {
+        print("触发");
         switch (index)
         {
             case 1:
@@ -328,7 +333,7 @@ public class RestController : MonoBehaviour
                 _uiMyProject.LoadMyProject(ProjectList.Count - 2);
                 break;
             case 4:
-                _uiMyProject.LoadMyProject(ProjectList.Count-1);
+                _uiMyProject.LoadMyProject(ProjectList.Count - 1);
                 break;
         }
     }
@@ -385,7 +390,7 @@ public class RestController : MonoBehaviour
     //获取满足使用条件的红包
     private void OnGetPackageCanUse(double money)
     {
-        List<RestDataPackageCanUse> data= _restful.GetPackageCanUse(Player.Instance.ID, money);
+        List<RestDataPackageCanUse> data = _restful.GetPackageCanUse(Player.Instance.ID, money);
         PackageCanUseList.Clear();
         foreach (RestDataPackageCanUse r in data)
         {
@@ -400,12 +405,15 @@ public class RestController : MonoBehaviour
         _uiMyProject.ShowMsg(str);
     }
 
-    IEnumerator DownloadTexture(int id, string url, int index)
+    IEnumerator DownloadTexture(int index)
     {
+        string url = "http://" + ProjectList[index].Url;
+        WWW www = new WWW(url);
+        yield return www;
         string folderPath = PathForFolder();
         int num = GetPicNum(folderPath);
 
-        string fileName = url.Split('/')[2];
+        string fileName = ProjectList[index].Url.Split('/')[2];
 
         //if (num > index) //该图片已经下载
         //{
@@ -413,16 +421,17 @@ public class RestController : MonoBehaviour
         //}
         //else
         //{
-            WWW www = new WWW(url);
-            yield return www;
-            //安卓端下载保存图片
-            byte[] bytes = www.texture.EncodeToPNG();
-            _pathList[index] = PathForFile(fileName, _dic);  //移动平台判断
-            SaveNativeFile(bytes, _pathList[index]);
-            
+        //WWW www = new WWW(url);
+        //yield return www;
+        //安卓端下载保存图片
+        byte[] bytes = www.texture.EncodeToPNG();
+        _pathList[index] = PathForFile(fileName, _dic);  //移动平台判断
+        //print(_pathList[index]);
+        SaveNativeFile(bytes, _pathList[index]);
+
         //}
 
-        _pathList[index] = PathForFile(fileName, _dic);  //移动平台判断
+        //_pathList[index] = PathForFile(fileName, _dic);  //移动平台判断
         ProjectList[index].SpriteTex = GetSprite(_pathList[index]);
 
         _loadTextureNum++;
@@ -574,7 +583,7 @@ public class RestController : MonoBehaviour
     {
         //string str = @"G:\\GitProject\\SecondHandCar\\MyAPP\\Pic";
         int num = 0;
-        DirectoryInfo folder=new DirectoryInfo(folderPath);
+        DirectoryInfo folder = new DirectoryInfo(folderPath);
         num = folder.GetFiles().Length;
         return num;
     }
