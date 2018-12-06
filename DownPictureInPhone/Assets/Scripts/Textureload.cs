@@ -2,12 +2,14 @@
 using System.Collections;
 using System.IO;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Textureload : MonoBehaviour
 {
     public string url = "http://jrdcar.com/files/b80df797-582b-4cf4-926c-9f92e58c6465.jpg";
     public GameObject go;
     private string path;
+    public Image _image;
 
     private void Start()
     {
@@ -102,6 +104,7 @@ public class Textureload : MonoBehaviour
     public void ShowNativeTexture()
     {
         go.GetComponent<MeshRenderer>().material.mainTexture = GetNativeFile(path);
+        _image.sprite= GetSprite(path);
     }
 
     /// <summary>
@@ -121,7 +124,27 @@ public class Textureload : MonoBehaviour
             texture.LoadImage(bytes);
             return texture;
         }
-        catch (Exception c)
+        catch
+        {
+        }
+        return null;
+    }
+
+    public Sprite GetSprite(string path)
+    {
+        try
+        {
+            var pathName = path;
+            var bytes = ReadFile(pathName);
+            int width = Screen.width;
+            int height = Screen.height;
+            var texture = new Texture2D(width, height);
+            texture.LoadImage(bytes);
+            Sprite m_sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0, 0));
+            print(m_sprite.name);
+            return m_sprite;
+        }
+        catch
         {
         }
         return null;

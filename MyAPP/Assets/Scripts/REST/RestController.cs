@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
 public class RestController : MonoBehaviour
@@ -31,6 +32,10 @@ public class RestController : MonoBehaviour
 
     private int _loadTextureNum = 0;
     private int _projectsNum = 0;
+
+    //图片下载
+    private List<string> _pathList=new List<string>();  //存储图片的路径
+    private string _dic="Pic";  //存储图片的文件夹
 
     private void Awake()
     {
@@ -86,9 +91,6 @@ public class RestController : MonoBehaviour
         int projectsCount = statistics.data.projectCount;
         LoadControl(memCount, projectsCount, totalAssets);
 
-        //加载项目列表
-        AnalysisProjectsListRest();
-        
     }
 
     private void Update()
@@ -102,7 +104,7 @@ public class RestController : MonoBehaviour
             LoadProjectsNum();
 
             //得到项目详细，并存入列表
-            for(int i=0;i<ProjectList.Count;i++)
+            for (int i = 0; i < ProjectList.Count; i++)
             {
                 RestDataProjectInfo proInfo = _restful.GetProjectDetail(ProjectList[i].Id);
                 ProjectDetailList.Add(proInfo.detail);
@@ -113,6 +115,8 @@ public class RestController : MonoBehaviour
 
             _loadTextureNum = 0;
         }
+
+
     }
 
     //解析项目列表接口，下载图片
@@ -125,6 +129,7 @@ public class RestController : MonoBehaviour
         for (int i = 0; i < restDataProList.rows.Length; i++)
         {
             ProjectList.Add(new Project());
+            _pathList.Add("");
         }
 
 
@@ -144,16 +149,16 @@ public class RestController : MonoBehaviour
 
             StartCoroutine(DownloadTexture(value, str, i));
 
-            //手机端
-            if (i < 11)
-            {
-                ProjectList[i].SpriteTex = Resources.Load<Sprite>((i + 1).ToString());
-            }
-            else
-            {
-                int num = Random.Range(1, 12);
-                ProjectList[i].SpriteTex = Resources.Load<Sprite>((i).ToString());
-            }
+            ////手机端
+            //if (i < 11)
+            //{
+            //    ProjectList[i].SpriteTex = Resources.Load<Sprite>((i + 1).ToString());
+            //}
+            //else
+            //{
+            //    int num = Random.Range(1, 12);
+            //    ProjectList[i].SpriteTex = Resources.Load<Sprite>((i).ToString());
+            //}
             //print(str);
         }
     }
@@ -397,14 +402,180 @@ public class RestController : MonoBehaviour
 
     IEnumerator DownloadTexture(int id, string url, int index)
     {
-        WWW www = new WWW(url);
-        yield return www;
-        //PC端
-        //Texture2D tex2d = www.texture;
-        //Sprite m_sprite = Sprite.Create(tex2d, new Rect(0, 0, tex2d.width, tex2d.height), new Vector2(0, 0));
-        //ProjectList[index].SpriteTex = m_sprite;
+        string folderPath = PathForFolder();
+        int num = GetPicNum(folderPath);
+
+        string fileName = url.Split('/')[2];
+
+        //if (num > index) //该图片已经下载
+        //{
+        //    yield return null;
+        //}
+        //else
+        //{
+            WWW www = new WWW(url);
+            yield return www;
+            //安卓端下载保存图片
+            byte[] bytes = www.texture.EncodeToPNG();
+            _pathList[index] = PathForFile(fileName, _dic);  //移动平台判断
+            SaveNativeFile(bytes, _pathList[index]);
+            
+        //}
+
+        _pathList[index] = PathForFile(fileName, _dic);  //移动平台判断
+        ProjectList[index].SpriteTex = GetSprite(_pathList[index]);
+
         _loadTextureNum++;
         string value = (_loadTextureNum * 100 / _projectsNum).ToString();
         _uiStartPanel.ChangeLoadValue(value);  //加载进度显示
+    }
+
+    /// <summary>
+    /// 判断平台
+    /// </summary>
+    /// <param name="filename"></param>
+    /// <returns></returns>
+    public string PathForFile(string filename, string dic)
+    {
+        if (Application.platform == RuntimePlatform.IPhonePlayer)   //IOS
+        {
+            string path = Application.persistentDataPath.Substring(0, Application.persistentDataPath.Length - 5);
+            path = path.Substring(0, path.LastIndexOf('/'));
+            path = Path.Combine(path, "Documents");
+            path = Path.Combine(path, dic);
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
+            return Path.Combine(path, filename);
+        }
+        else if (Application.platform == RuntimePlatform.Android)   //Android
+        {
+            string path = Application.persistentDataPath;
+            path = path.Substring(0, path.LastIndexOf('/'));
+            path = Path.Combine(path, dic);
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
+            return Path.Combine(path, filename);
+        }
+        else  //Windows
+        {
+            string path = Application.dataPath;
+            path = path.Substring(0, path.LastIndexOf('/'));
+            path = Path.Combine(path, dic);
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
+            return Path.Combine(path, filename);
+        }
+    }
+
+    /// <summary>
+    /// 得到放置图片文件的文件夹
+    /// </summary>
+    /// <returns></returns>
+    private string PathForFolder()
+    {
+        if (Application.platform == RuntimePlatform.IPhonePlayer)   //IOS
+        {
+            string path = Application.persistentDataPath.Substring(0, Application.persistentDataPath.Length - 5);
+            path = path.Substring(0, path.LastIndexOf('/'));
+            path = Path.Combine(path, "Documents");
+            path = Path.Combine(path, _dic);
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
+            return path;
+        }
+        else if (Application.platform == RuntimePlatform.Android)   //Android
+        {
+            string path = Application.persistentDataPath;
+            path = path.Substring(0, path.LastIndexOf('/'));
+            path = Path.Combine(path, _dic);
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
+            return path;
+        }
+        else  //Windows
+        {
+            string path = Application.dataPath;
+            path = path.Substring(0, path.LastIndexOf('/'));
+            path = Path.Combine(path, _dic);
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
+            return path;
+        }
+    }
+
+    /// <summary>
+    /// 在本地保存文件
+    /// </summary>
+    /// <param name="bytes"></param>
+    /// <param name="path"></param>
+    public void SaveNativeFile(byte[] bytes, string path)
+    {
+        FileStream fs = new FileStream(path, FileMode.Create);
+        fs.Write(bytes, 0, bytes.Length);
+        fs.Flush();
+        fs.Close();
+    }
+
+    /// <summary>
+    /// 获得UI（汽车图片）
+    /// </summary>
+    /// <param name="path"></param>
+    /// <returns></returns>
+    public Sprite GetSprite(string path)
+    {
+        try
+        {
+            var pathName = path;
+            var bytes = ReadFile(pathName);
+            int width = Screen.width;
+            int height = Screen.height;
+            var texture = new Texture2D(width, height);
+            texture.LoadImage(bytes);
+            return Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0, 0));
+        }
+        catch
+        {
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// 读取本地文件
+    /// </summary>
+    /// <param name="filePath"></param>
+    /// <returns></returns>
+    public byte[] ReadFile(string filePath)
+    {
+        var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+        fs.Seek(0, SeekOrigin.Begin);
+        var binary = new byte[fs.Length];
+        fs.Read(binary, 0, binary.Length);
+        fs.Close();
+        return binary;
+    }
+
+    /// <summary>
+    /// 得到已下载的图片的数量
+    /// </summary>
+    /// <returns></returns>
+    public int GetPicNum(string folderPath)
+    {
+        //string str = @"G:\\GitProject\\SecondHandCar\\MyAPP\\Pic";
+        int num = 0;
+        DirectoryInfo folder=new DirectoryInfo(folderPath);
+        num = folder.GetFiles().Length;
+        return num;
     }
 }
