@@ -335,6 +335,48 @@ public class Restful : MonoBehaviour
         return result;
     }
 
+    //带参数的Post请求，指定键值对，用于充值接口
+    private string Post(string url, Dictionary<string, int> dic1, Dictionary<string, double> dic2)
+    {
+        string result = "";
+        HttpWebRequest req = (HttpWebRequest)WebRequest.Create(url);
+        req.Method = "POST";
+        req.ContentType = "application/x-www-form-urlencoded";
+        #region 添加Post 参数
+        StringBuilder builder = new StringBuilder();
+        int i = 0;
+        foreach (var item in dic1)
+        {
+            if (i > 0)
+                builder.Append("&");
+            builder.AppendFormat("{0}={1}", item.Key, item.Value);
+            i++;
+        }
+        foreach (var item in dic2)
+        {
+            if (i > 0)
+                builder.Append("&");
+            builder.AppendFormat("{0}={1}", item.Key, item.Value);
+            i++;
+        }
+        byte[] data = Encoding.UTF8.GetBytes(builder.ToString());
+        req.ContentLength = data.Length;
+        using (Stream reqStream = req.GetRequestStream())
+        {
+            reqStream.Write(data, 0, data.Length);
+            reqStream.Close();
+        }
+        #endregion
+        HttpWebResponse resp = (HttpWebResponse)req.GetResponse();
+        Stream stream = resp.GetResponseStream();
+        //获取响应内容
+        using (StreamReader reader = new StreamReader(stream, Encoding.UTF8))
+        {
+            result = reader.ReadToEnd();
+        }
+        return result;
+    }
+
     //带参数的Post请求，指定发送字符串内容
     private string Post(string url, string content)
     {
@@ -606,5 +648,18 @@ public class Restful : MonoBehaviour
         string result = Post(url, dic1, dic2);
         RestDataCommitRaiseReturn returnData = JsonMapper.ToObject<RestDataCommitRaiseReturn>(result);
         return returnData.msg;
+    }
+
+    //充值接口
+    public void Recharge(int memId,double money)
+    {
+        string url = "http://jrdcar.com/front/recharge";
+        Dictionary<string, int> dic1 = new Dictionary<string, int>();
+        Dictionary<string, double> dic2 = new Dictionary<string, double>();
+
+        dic1.Add("memID", memId);
+        dic2.Add("money", money);
+        string result = Post(url, dic1, dic2);
+        print(result);
     }
 }

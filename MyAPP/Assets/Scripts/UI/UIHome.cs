@@ -21,7 +21,7 @@ public class UIHome : MonoBehaviour
 
     //加载我的项目委托
     public delegate void UpdateProjectPageDel(int index);
-    public UpdateProjectPageDel UpdateProjectPageCallback = null;
+    public UpdateProjectPageDel UpdateProjectPageCallback = null;  //在RestController中被监听
     public delegate void UpdateProjectListDel();
     public UpdateProjectListDel UpdateProjectsListCallback = null;
 

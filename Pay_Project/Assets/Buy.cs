@@ -3,18 +3,25 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using UnityEngine;
+using UnityEngine.UI;
+
 public class Buy : MonoBehaviour
 {
-    UdpClient client;
-    Thread SendThread;
-    string CommodityName = "钻石";//商品名称
-    string BuyCuont = "1";//购买的数量
-    string serverIP = "127.0.0.1";
+    private UdpClient client;
+    private Thread SendThread;
+    private string CommodityName = "充值余额";//商品名称
+    private string BuyCuont = "0";//购买的数量
+    private string serverIP = "47.110.225.20";
     //我发送一个购买的商品名称给服务器，服务器根据商品名称，获得一个字符串 未加签，然后再将这个字符串加签 返回给客户端
 
-    Thread GetThread;
-    void Start()
+    private Thread GetThread;
+
+    public InputField NumInput;
+
+    private void Start()
     {
+        NumInput.onValueChanged.AddListener(OnNumInputValueChanged);
+
         //获取本机IP
         foreach (IPAddress _IPAddress in Dns.GetHostEntry(Dns.GetHostName()).AddressList)
         {
@@ -29,9 +36,11 @@ public class Buy : MonoBehaviour
         GetThread.IsBackground = true;
         GetThread.Start();
     }
+
     #region 从服务端获取最终的请求安卓支付的参数,然后在主线程调安卓发起支付请求.
-    bool zhifu = false;
+    private bool zhifu = false;
     private string strInfo = "";//最终加签后的字符串
+
     private void GetStringInfo()
     {
         while (true)
@@ -46,6 +55,7 @@ public class Buy : MonoBehaviour
             zhifu = strInfo == "" ? false : true;
         }
     }
+
     private void Update()
     {
         //不能直接在其它线程中调用调用安卓层的方法,而Update是在主线程执行的
@@ -62,8 +72,23 @@ public class Buy : MonoBehaviour
             zhifu = false;
         }
     }
+
+    private void OnNumInputValueChanged(string str)
+    {
+        if(str=="")
+        {
+            BuyCuont = "0";
+        }
+        else
+        {
+            BuyCuont = str;
+        }
+        print(str);
+    }
+
     #endregion
     #region 告诉服务端要购买商品了,购买的商品名称和数量,让它返回一个参数,可以调安卓支付的时候传递.
+
     /// <summary>
         /// 购买物品 需要将该方法绑定到按钮上
         /// </summary>
@@ -72,6 +97,7 @@ public class Buy : MonoBehaviour
         SendThread = new Thread(SendData);
         SendThread.Start();
     }
+
     //发送数据的线程
     private void SendData()
     {
@@ -83,7 +109,9 @@ public class Buy : MonoBehaviour
 
         SendThread.Abort();//中止线程
     }
+
     #endregion
+
     //正常关闭应用程序时候调用的,需要终止线程、关闭socket
     private void OnApplicationQuit()
     {

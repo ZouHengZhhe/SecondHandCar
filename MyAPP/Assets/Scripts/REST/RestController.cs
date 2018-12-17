@@ -16,6 +16,7 @@ public class RestController : MonoBehaviour
     private UIMyProject _uiMyProject;
     private UIMoneyDetail _uiMoneyDetail;
     private UIWithDraw _uiWithDraw;
+    private Recharge _recharge;
 
     //所有项目图片和状态
     //传入TestEmailUI中，用于更新项目图片
@@ -85,6 +86,10 @@ public class RestController : MonoBehaviour
         _loadUI = GameObject.Find("AppPage").GetComponent<TestEmailUI>();
         _uiHome.UpdateProjectsListCallback += OnUpdateProjectsPage;
 
+        //充值
+        _recharge = GameObject.Find("AppPage").GetComponent<Recharge>();
+        _recharge.RechargeCallback += OnRecharge;
+
         //得到会员总数、众筹项目，总资产
         RestDataStatistics statistics = _restful.GetStatistics();
         int memCount = statistics.data.memberCount;
@@ -124,6 +129,7 @@ public class RestController : MonoBehaviour
                 RestDataProjectInfo proInfo = _restful.GetProjectDetail(ProjectList[i].Id);
                 ProjectDetailList.Add(proInfo.detail);
             }
+            
 
             //图片加载完成，显示APP页面
             _uiManager.ShowApp();
@@ -162,9 +168,8 @@ public class RestController : MonoBehaviour
             ProjectList[i].SupportNum = restDataProList.rows[i].supportNum;
             ProjectList[i].City = restDataProList.rows[i].city;
 
-            //StartCoroutine(DownloadTexture(value, str, i));
-
         }
+        ProjectList.Reverse();
     }
 
     //加载轮播图
@@ -173,10 +178,10 @@ public class RestController : MonoBehaviour
         Sprite[] spritesArray = new Sprite[4];
         int[] statesArray = new int[4];
         //得到最新的四个项目
-        for (int i = ProjectList.Count - 4; i < ProjectList.Count; i++)
+        for (int i = 0; i < 4; i++)
         {
-            spritesArray[i - ProjectList.Count + 4] = ProjectList[i].SpriteTex;
-            statesArray[i - ProjectList.Count + 4] = ProjectList[i].State;
+            spritesArray[i] = ProjectList[i].SpriteTex;
+            statesArray[i] = ProjectList[i].State;
         }
         _uiHome.LoadScrollItems(spritesArray, statesArray);
     }
@@ -213,6 +218,12 @@ public class RestController : MonoBehaviour
     //点击“我的”按钮，进入”我的“页面，更新页面
     private void OnUpdateMyPage()
     {
+        if (Player.Instance.IsRegister)
+        {
+            double balance = _restful.GetBalance(Player.Instance.ID);
+            Player.Instance.Balance = balance;
+        }
+
         //检测是否登陆成功
         _uiMyPage.OnRegisterSucc(Player.Instance.Username);
     }
@@ -324,16 +335,16 @@ public class RestController : MonoBehaviour
         switch (index)
         {
             case 1:
-                _uiMyProject.LoadMyProject(ProjectList.Count - 4);
+                _uiMyProject.LoadMyProject(0);
                 break;
             case 2:
-                _uiMyProject.LoadMyProject(ProjectList.Count - 3);
+                _uiMyProject.LoadMyProject(1);
                 break;
             case 3:
-                _uiMyProject.LoadMyProject(ProjectList.Count - 2);
+                _uiMyProject.LoadMyProject(2);
                 break;
             case 4:
-                _uiMyProject.LoadMyProject(ProjectList.Count - 1);
+                _uiMyProject.LoadMyProject(3);
                 break;
         }
     }
@@ -363,7 +374,7 @@ public class RestController : MonoBehaviour
             Player.Instance.Password = password;
             Player.Instance.ID = data.id;
 
-            //TODO:得到Player的相关信息
+            //得到Player的相关信息
             //得到用户余额
             double balance = _restful.GetBalance(data.id);
             Player.Instance.Balance = balance;
@@ -403,6 +414,12 @@ public class RestController : MonoBehaviour
     {
         string str = _restful.PostCommitRaise(data);
         _uiMyProject.ShowMsg(str);
+    }
+
+    //充值
+    private void OnRecharge(double money)
+    {
+        _restful.Recharge(Player.Instance.ID, money);
     }
 
     IEnumerator DownloadTexture(int index)
